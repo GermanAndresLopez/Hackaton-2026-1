@@ -1,0 +1,148 @@
+{
+  "pais": "Colombia",
+  "proposito": "Conectar jóvenes emprendedores y pequeños negocios con entidades, apoyos, rutas de formalización y oportunidades de crecimiento.",
+  "identidades": [
+    {
+      "id": "I01",
+      "nombre": "Joven emprendedor",
+      "descripcion": "Persona joven que está iniciando o consolidando un negocio con necesidad de orientación, visibilidad y acompañamiento.",
+      "puntos_fuertes": ["adaptabilidad", "uso de redes sociales", "creatividad", "aprendizaje rápido"],
+      "necesidades": ["formalización", "marketing digital", "ventas", "acceso a oportunidades"],
+      "motores_de_impulso": ["mentoría", "capital semilla", "catálogo digital", "formación práctica"]
+    },
+    {
+      "id": "I02",
+      "nombre": "Mujer emprendedora",
+      "descripcion": "Mujer que emprende por oportunidad o necesidad, muchas veces con cargas de cuidado y barreras de acceso a crédito.",
+      "puntos_fortes": ["resiliencia", "organización", "ventas por recomendación", "gestión del hogar y negocio"],
+      "necesidades": ["financiamiento", "tiempo", "redes de apoyo", "formalización"],
+      "motores_de_impulso": ["crédito flexible", "acompañamiento", "capacitación comercial", "apoyo institucional"]
+    },
+    {
+      "id": "I03",
+      "nombre": "Negocio informal",
+      "descripcion": "Actividad económica que opera sin plena formalización, normalmente desde el hogar, la calle o redes sociales.",
+      "puntos_fortes": ["costos bajos", "cercanía al cliente", "respuesta rápida", "flexibilidad"],
+      "necesidades": ["RUT", "marca", "herramientas de venta", "acompañamiento para formalizar"],
+      "motores_de_impulso": ["ruta de formalización", "perfil público", "catálogo", "educación financiera"]
+    },
+    {
+      "id": "I04",
+      "nombre": "Micronegocio familiar",
+      "descripcion": "Negocio pequeño sostenido por familia o red cercana, con fuerte base comunitaria y limitada escala.",
+      "puntos_fortes": ["confianza", "trabajo colaborativo", "clientes recurrentes", "bajo costo operativo"],
+      "necesidades": ["orden comercial", "mejoras de imagen", "ventas digitales", "finanzas básicas"],
+      "motores_de_impulso": ["plan comercial", "branding simple", "inventario", "acompañamiento técnico"]
+    },
+    {
+      "id": "I05",
+      "nombre": "Startup o emprendimiento digital",
+      "descripcion": "Proyecto con vocación de crecimiento, tecnología o servicios escalables.",
+      "puntos_fortes": ["innovación", "escalabilidad", "automatización", "capacidad de mejora"],
+      "necesidades": ["validación de mercado", "clientes tempranos", "red de aliados", "acceso a inversión"],
+      "motores_de_impulso": ["aceleración", "incubación", "networking", "inversión semilla"]
+    }
+  ],
+  "entidades": [
+    {
+      "id": "E01",
+      "nombre": "SENA - Fondo Emprender",
+      "tipo": "pública",
+      "foco": ["capital semilla", "formación", "emprendimiento"],
+      "puntos_fuertes": ["financiación inicial", "acompañamiento", "cobertura nacional"],
+      "necesidades_que_resuelve": ["arranque de negocio", "validación de idea", "formalización inicial"],
+      "ideal_para": ["joven emprendedor", "startup o emprendimiento digital", "micronegocio en transición"],
+      "modulos_recomendados": ["oportunidades", "financiamiento", "formación"]
+    },
+    {
+      "id": "E02",
+      "nombre": "iNNpulsa Colombia",
+      "tipo": "pública",
+      "foco": ["innovación", "escalamiento", "productividad"],
+      "puntos_fuertes": ["redes", "crecimiento empresarial", "programas de innovación"],
+      "necesidades_que_resuelve": ["escalamiento", "conexión con ecosistema", "validación comercial"],
+      "ideal_para": ["startup o emprendimiento digital", "emprendimiento con potencial de crecimiento"],
+      "modulos_recomendados": ["alianzas", "crecimiento", "innovación"]
+    },
+    {
+      "id": "E03",
+      "nombre": "Bancóldex",
+      "tipo": "pública",
+      "foco": ["crédito", "crecimiento empresarial", "financiamiento"],
+      "puntos_fuertes": ["líneas de crédito", "respaldos financieros", "soluciones empresariales"],
+      "necesidades_que_resuelve": ["capital de trabajo", "expansión", "mejora operativa"],
+      "ideal_para": ["micronegocio familiar", "emprendedor en crecimiento"],
+      "modulos_recomendados": ["financiamiento", "educación financiera"]
+    },
+    {
+      "id": "E04",
+      "nombre": "Fondo Mujer Libre y Productiva",
+      "tipo": "pública",
+      "foco": ["mujeres", "financiamiento", "productividad"],
+      "puntos_fuertes": ["enfoque de género", "apoyo integral", "acceso a oportunidades"],
+      "necesidades_que_resuelve": ["barreras de crédito", "fortalecimiento de negocio", "acompañamiento"],
+      "ideal_para": ["mujer emprendedora"],
+      "modulos_recomendados": ["financiamiento", "acompañamiento", "rutas de apoyo"]
+    },
+    {
+      "id": "E05",
+      "nombre": "Cámara de Comercio",
+      "tipo": "mixta",
+      "foco": ["formalización", "redes", "servicios empresariales"],
+      "puntos_fuertes": ["registro", "capacitaciones", "contacto empresarial"],
+      "necesidades_que_resuelve": ["formalización", "visibilidad", "conexión con aliados"],
+      "ideal_para": ["negocio informal", "micronegocio familiar", "emprendedor en crecimiento"],
+      "modulos_recomendados": ["registro", "formalización", "alianzas"]
+    },
+    {
+      "id": "E06",
+      "nombre": "ProColombia",
+      "tipo": "pública",
+      "foco": ["internacionalización", "exportación", "promoción"],
+      "puntos_fuertes": ["mercados internacionales", "acompañamiento exportador", "posicionamiento"],
+      "necesidades_que_resuelve": ["expansión", "exportación", "nuevos mercados"],
+      "ideal_para": ["startup o emprendimiento digital", "emprendimiento escalable"],
+      "modulos_recomendados": ["crecimiento", "mercados", "oportunidades"]
+    },
+    {
+      "id": "E07",
+      "nombre": "MinTIC / programas de transformación digital",
+      "tipo": "pública",
+      "foco": ["digitalización", "tecnología", "competencias digitales"],
+      "puntos_fuertes": ["alfabetización digital", "herramientas tecnológicas", "acceso a programas"],
+      "necesidades_que_resuelve": ["presencia digital", "automatización", "competencias digitales"],
+      "ideal_para": ["negocio informal", "micronegocio familiar", "joven emprendedor"],
+      "modulos_recomendados": ["digitalización", "formación", "IA"]
+    }
+  ],
+  "puntos_fuertes_nacionales": [
+    "Financiación semilla y líneas de crédito para iniciar o crecer.",
+    "Cobertura institucional amplia con presencia pública y privada.",
+    "Oferta de formación técnica, comercial y digital.",
+    "Posibilidades de formalización y registro empresarial.",
+    "Programas de innovación y escalamiento para negocios con potencial.",
+    "Enfoque diferenciado para mujeres, jóvenes y microempresas."
+  ],
+  "rutas_de_impulso": [
+    {
+      "etapa": "idea",
+      "acciones": ["validar problema", "definir propuesta de valor", "crear perfil emprendedor"],
+      "apoyos_sugeridos": ["SENA", "cámaras de comercio", "formación básica"]
+    },
+    {
+      "etapa": "inicio",
+      "acciones": ["crear catálogo", "abrir canales de venta", "mejorar marca"],
+      "apoyos_sugeridos": ["MinTIC", "cámaras de comercio", "programas municipales"]
+    },
+    {
+      "etapa": "formalización",
+      "acciones": ["obtener RUT", "organizar finanzas", "definir precios"],
+      "apoyos_sugeridos": ["cámaras de comercio", "Bancóldex", "alcaldías"]
+    },
+    {
+      "etapa": "crecimiento",
+      "acciones": ["buscar aliados", "mejorar gestión comercial", "invertir en digital"],
+      "apoyos_sugeridos": ["iNNpulsa", "ProColombia", "aceleradoras"]
+    }
+  ]
+}

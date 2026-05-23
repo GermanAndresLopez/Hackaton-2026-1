@@ -21,6 +21,7 @@ export type BusinessTheme =
   | "callejero"
 
 export type AIProvider =
+  | "nvidia"
   | "groq"
   | "openrouter"
   | "gemini"
@@ -44,6 +45,16 @@ export interface User {
   createdAt: number
 }
 
+export interface GrowthRoute {
+  identityId: string
+  identityName: string
+  stage: string
+  recommendedEntities: string[]
+  customAdvice: string
+  createdAt: number
+  isActive: boolean
+}
+
 export interface Business {
   id: string
   userId: string
@@ -62,6 +73,11 @@ export interface Business {
     secondary: string
     accent: string
   }
+  enfoque?: string
+  aspiraciones?: string
+  necesidades?: string
+  onboardingStep: number
+  growthRoute?: GrowthRoute
   createdAt: number
 }
 
@@ -121,7 +137,7 @@ export interface Metric {
 
 // AI Gateway types
 export interface AIRequest {
-  task: "copywriting" | "marketing" | "branding" | "image" | "banner" | "chat"
+  task: "copywriting" | "marketing" | "branding" | "image" | "banner" | "chat" | "connectivity"
   prompt: string
   context?: Record<string, string>
   preferredProvider?: AIProvider

@@ -45,6 +45,21 @@ export default defineSchema({
         accent: v.string(),
       })
     ),
+    enfoque: v.optional(v.string()),
+    aspiraciones: v.optional(v.string()),
+    necesidades: v.optional(v.string()),
+    onboardingStep: v.number(),
+    growthRoute: v.optional(
+      v.object({
+        identityId: v.string(),
+        identityName: v.string(),
+        stage: v.string(),
+        recommendedEntities: v.array(v.string()),
+        customAdvice: v.string(),
+        createdAt: v.number(),
+        isActive: v.boolean(),
+      })
+    ),
   })
     .index("by_userId", ["userId"])
     .index("by_slug", ["slug"]),
@@ -85,6 +100,7 @@ export default defineSchema({
     prompt: v.string(),
     response: v.string(),
     provider: v.union(
+      v.literal("nvidia"),
       v.literal("groq"),
       v.literal("openrouter"),
       v.literal("gemini"),

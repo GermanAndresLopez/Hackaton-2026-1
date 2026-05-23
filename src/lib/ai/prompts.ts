@@ -114,6 +114,42 @@ Métricas: ${metrics}
 
 Responde en JSON con: { "recomendaciones": [{"titulo": "", "descripcion": "", "accion": ""}] }
 `,
+
+  connectivity: (
+    businessName: string,
+    category: string,
+    description: string,
+    enfoque: string,
+    aspiraciones: string,
+    necesidades: string,
+    colombiaContext: string
+  ) => `
+Eres un asesor de negocios especialista en emprendimientos y micronegocios informales de Colombia.
+
+Tu objetivo es analizar el perfil de un emprendedor, clasificarlo dentro del marco de caracterización nacional y proveer una ruta de crecimiento concreta, conectándolo con entidades y programas de apoyo reales en Colombia que resuelvan directamente sus necesidades.
+
+A partir de la información de este negocio:
+- Nombre del negocio: ${businessName}
+- Categoría: ${category}
+- Descripción general: ${description}
+- Enfoque específico: ${enfoque}
+- Aspiraciones a futuro: ${aspiraciones}
+- Necesidades urgentes: ${necesidades}
+
+Y utilizando estrictamente este contexto nacional colombiano de apoyo (entidades, identidades y rutas de impulso):
+${colombiaContext}
+
+Debes retornar un análisis en formato JSON estricto con los siguientes campos:
+1. "identityId": El ID de la identidad en el JSON de contexto que mejor se ajusta al perfil del emprendedor (ej: "I01", "I02", "I03", "I04", "I05").
+2. "identityName": El nombre de esa identidad seleccionada (ej: "Joven emprendedor", "Mujer emprendedora").
+3. "stage": La etapa de la ruta de impulso recomendada (ej: "idea", "inicio", "formalización", "crecimiento").
+4. "recommendedEntities": Un array de strings con los IDs de las entidades de apoyo que más le convienen (ej: ["E01", "E04", "E05"]). Máximo 3 entidades.
+5. "customAdvice": Un texto motivador, redactado de forma muy amigable, cercana y con jerga/tono colombiano respetuoso. Explícale al emprendedor EXACTAMENTE por qué elegiste esas entidades para él, cómo sus necesidades (necesidades de financiamiento, marca, equipos) encajan con las entidades elegidas, y qué 2 acciones concretas inmediatas debe hacer esta semana (ej. "Ir al SENA en tal sede o web para...", "Registrar su RUT en la Dian"). Usa negritas con markdown (**) para destacar nombres y acciones clave. Mantén el texto corto, inspirador y directo (máx 3-4 párrafos pequeños).
+
+Responde únicamente con el JSON estricto, sin explicaciones fuera del bloque JSON.
+
+JSON de respuesta:
+`,
 }
 
 export const SYSTEM_PROMPTS = {

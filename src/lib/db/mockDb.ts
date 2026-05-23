@@ -66,11 +66,12 @@ export const db = {
 
     list: (): Business[] => [...businesses],
 
-    create: (data: Omit<Business, "id" | "slug" | "createdAt">): Business => {
+    create: (data: Omit<Business, "id" | "slug" | "createdAt" | "onboardingStep">): Business => {
       const business: Business = {
         ...data,
         id: generateId("biz"),
         slug: slugify(data.name),
+        onboardingStep: 1,
         createdAt: Date.now(),
       }
       businesses = [...businesses, business]
@@ -83,6 +84,18 @@ export const db = {
       const updated = { ...businesses[idx], ...data }
       businesses = businesses.map((b) => (b.id === id ? updated : b))
       return updated
+    },
+
+    updateOnboardingStep: (id: string, step: number, data: Partial<Business>): Business | null => {
+      const idx = businesses.findIndex((b) => b.id === id)
+      if (idx === -1) return null
+      const updated = { ...businesses[idx], ...data, onboardingStep: step }
+      businesses = businesses.map((b) => (b.id === id ? updated : b))
+      return updated
+    },
+
+    saveGrowthRoute: (id: string, route: NonNullable<Business["growthRoute"]>): Business | null => {
+      return db.businesses.update(id, { growthRoute: route })
     },
   },
 
