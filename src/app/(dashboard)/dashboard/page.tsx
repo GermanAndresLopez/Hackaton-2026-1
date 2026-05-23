@@ -1,25 +1,74 @@
+"use client"
+
 import Link from "next/link"
+import { useState, useEffect } from "react"
 import { formatPrice } from "@/lib/utils"
-import { currentBusiness, currentProducts, db } from "@/lib/db/mockDb"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "../../../../convex/_generated/api"
+import { useBusinessStore } from "@/store/useBusinessStore"
 import { ROUTES } from "@/lib/constants"
+import { toast } from "sonner"
 
 export default function DashboardPage() {
-  const business = currentBusiness()
-  const products = currentProducts()
-  const stats = db.getStats(business.id)
+  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
+  const setBusiness = useBusinessStore((state) => state.setBusiness)
+  const businessId = currentBusiness?._id
+
+  // Consulta de productos reales
+  const products = useQuery(api.products.list, businessId ? { businessId } : "skip") ?? []
+  const updateBusiness = useMutation(api.businesses.updateBusiness)
+  
+  const [whatsapp, setWhatsapp] = useState("")
+  const [isSavingContact, setIsSavingContact] = useState(false)
+
+  useEffect(() => {
+    if (currentBusiness?.whatsapp) {
+      setWhatsapp(currentBusiness.whatsapp)
+    }
+  }, [currentBusiness?.whatsapp])
+  
+  const totalProducts = products.length
+  const activeProducts = products.filter(p => p.isActive).length
   const recentProducts = products.slice(0, 3)
 
   const STATS = [
-    { label: "Productos activos", value: String(stats.activeProducts), sub: `${stats.totalProducts} en total` },
-    { label: "Visitas a tu tienda", value: String(stats.totalViews), sub: "+23% este mes" },
-    { label: "Mensajes recibidos", value: String(stats.totalMessages), sub: "+8 hoy" },
-    { label: "Contenido generado", value: String(stats.contentGenerated), sub: "+5 esta semana" },
+    { label: "Productos activos", value: String(activeProducts), sub: `${totalProducts} en total` },
+    { label: "Visitas a tu tienda", value: "0", sub: "Sin visitas aún" },
+    { label: "Mensajes recibidos", value: "0", sub: "0 hoy" },
+    { label: "Contenido generado", value: "0", sub: "0 esta semana" },
   ]
+
+  if (!currentBusiness) {
+    return null
+  }
+
+  const handleShareLink = () => {
+    const url = `${window.location.origin}/tienda/${currentBusiness.slug}`
+    navigator.clipboard.writeText(url)
+    toast.success("Enlace copiado al portapapeles")
+  }
+
+  const handleSaveContact = async () => {
+    if (!businessId) return
+    setIsSavingContact(true)
+    try {
+      const updated = await updateBusiness({
+        id: businessId,
+        updates: { whatsapp }
+      })
+      setBusiness(updated)
+      toast.success("Configuración de contacto guardada")
+    } catch (err) {
+      toast.error("Error al guardar la configuración")
+    } finally {
+      setIsSavingContact(false)
+    }
+  }
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
 
-      {/* ── Welcome banner — card claro ── */}
+      {/* ── Welcome banner ── */}
       <div style={{
         background: '#ffffff',
         borderRadius: '18px',
@@ -41,7 +90,7 @@ export default function DashboardPage() {
             fontSize: '28px', fontWeight: 600, color: '#1d1d1f',
             lineHeight: 1.1, letterSpacing: '-0.28px', marginBottom: '6px',
           }}>
-            {business.name}
+            {currentBusiness.name}
           </h2>
           <p style={{ fontSize: '15px', color: '#7a7a7a', letterSpacing: '-0.374px' }}>
             Tu centro de control para crecer más con IA.
@@ -89,6 +138,74 @@ export default function DashboardPage() {
         ))}
       </div>
 
+      {/* ── Tienda Pública Section ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4" style={{ marginBottom: '24px' }}>
+        <div className="card-apple">
+          <h3 style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.374px' }}>
+            Mi Tienda Pública
+          </h3>
+          <p style={{ fontSize: '13px', color: '#7a7a7a', letterSpacing: '-0.224px', marginBottom: '16px' }}>
+            Comparte tu tienda con clientes para recibir pedidos directamente.
+          </p>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={handleShareLink}
+              style={{
+                flex: 1, background: '#f5f5f7', color: '#1d1d1f',
+                fontSize: '14px', fontWeight: 500, padding: '10px',
+                borderRadius: '8px', border: '1px solid #e0e0e0', cursor: 'pointer',
+              }}
+            >
+              Copiar enlace
+            </button>
+            <Link
+              href={`/tienda/${currentBusiness.slug}`}
+              target="_blank"
+              style={{
+                flex: 1, background: '#0066cc', color: '#fff',
+                fontSize: '14px', fontWeight: 500, padding: '10px',
+                borderRadius: '8px', textAlign: 'center', textDecoration: 'none',
+              }}
+            >
+              Ver tienda
+            </Link>
+          </div>
+        </div>
+
+        <div className="card-apple">
+          <h3 style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.374px' }}>
+            Configuración de Contacto
+          </h3>
+          <p style={{ fontSize: '13px', color: '#7a7a7a', letterSpacing: '-0.224px', marginBottom: '16px' }}>
+            Actualiza el número donde recibirás los pedidos de WhatsApp.
+          </p>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <input
+              type="text"
+              value={whatsapp}
+              onChange={(e) => setWhatsapp(e.target.value)}
+              placeholder="Ej: 573001234567"
+              style={{
+                flex: 1, padding: '10px', borderRadius: '8px',
+                border: '1px solid #e0e0e0', fontSize: '14px',
+              }}
+            />
+            <button
+              onClick={handleSaveContact}
+              disabled={isSavingContact}
+              style={{
+                background: '#0066cc', color: '#fff',
+                fontSize: '14px', fontWeight: 500, padding: '10px 20px',
+                borderRadius: '8px', border: 'none', cursor: 'pointer',
+                opacity: isSavingContact ? 0.7 : 1
+              }}
+            >
+              {isSavingContact ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* ── Bottom row ── */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
@@ -99,7 +216,6 @@ export default function DashboardPage() {
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {QUICK_ACTIONS.map((action, i) => (
-              /* CSS hover via .row-hover — no JS event handlers needed */
               <div key={i} className="row-hover" style={{
                 display: 'flex', alignItems: 'center', gap: '12px',
                 padding: '10px 12px', borderRadius: '11px',
@@ -117,7 +233,7 @@ export default function DashboardPage() {
         {/* AI Tip + Recent products */}
         <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* AI recommendation */}
+          {/* AI recommendation placeholder */}
           <div style={{ background: '#e8f1fb', borderRadius: '18px', border: '1px solid #c5d9f0', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
               <div style={{ fontSize: '24px', flexShrink: 0 }}>💡</div>
@@ -126,13 +242,8 @@ export default function DashboardPage() {
                   Recomendación IA del día
                 </p>
                 <p style={{ fontSize: '14px', color: '#1d1d1f', lineHeight: 1.5, letterSpacing: '-0.224px' }}>
-                  Tus clientes preguntan mucho por domicilios. Considera agregar{" "}
-                  <strong>envío gratis los fines de semana</strong> como promoción. Los negocios
-                  que lo hacen aumentan consultas en un 40%.
+                  Para recibir recomendaciones personalizadas basadas en el contexto de tu negocio en Colombia, completa tu perfil y cuéntanos sobre tus necesidades en la sección del Agente IA.
                 </p>
-                <Link href={ROUTES.marketing} style={{ display: 'inline-block', marginTop: '10px', fontSize: '13px', fontWeight: 600, color: '#0066cc', textDecoration: 'none', letterSpacing: '-0.224px' }}>
-                  → Crear campaña para esto
-                </Link>
               </div>
             </div>
           </div>
@@ -147,39 +258,46 @@ export default function DashboardPage() {
                 Ver todos →
               </Link>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-              {recentProducts.map((p) => (
-                <div key={p.id} className="row-hover" style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '10px 12px', borderRadius: '11px',
-                }}>
-                  <div style={{
-                    width: '44px', height: '44px', borderRadius: '11px',
-                    background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '22px', flexShrink: 0,
+            {recentProducts.length === 0 ? (
+              <p style={{ fontSize: '14px', color: '#7a7a7a', padding: '12px', textAlign: 'center' }}>
+                No tienes productos registrados.
+              </p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {recentProducts.map((p) => (
+                  <div key={p._id} className="row-hover" style={{
+                    display: 'flex', alignItems: 'center', gap: '12px',
+                    padding: '10px 12px', borderRadius: '11px',
                   }}>
-                    {p.images[0]}
+                    <div style={{
+                      width: '44px', height: '44px', borderRadius: '11px',
+                      background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '22px', flexShrink: 0,
+                    }}>
+                      {p.images?.[0] || "📦"}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {p.name}
+                      </p>
+                      <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{p.category}</p>
+                    </div>
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px' }}>{formatPrice(p.price)}</p>
+                      <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{p.stock} en stock</p>
+                    </div>
                   </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                      {p.name}
-                    </p>
-                    <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{p.category}</p>
-                  </div>
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px' }}>{formatPrice(p.price)}</p>
-                    <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{p.stock} en stock</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             <div style={{ height: '1px', background: '#e0e0e0', margin: '12px 0' }} />
             <Link href={ROUTES.productos}
               className="btn-primary"
               style={{ display: 'flex', width: '100%', justifyContent: 'center', fontSize: '14px', padding: '10px' }}>
-              + Agregar producto
+              Gestionar catálogo
             </Link>
           </div>
+
         </div>
       </div>
     </div>
@@ -187,7 +305,7 @@ export default function DashboardPage() {
 }
 
 const QUICK_ACTIONS = [
-  { icon: "📦", label: "Nuevo producto", description: "Agregar con ayuda de IA" },
+  { icon: "📦", label: "Nuevo producto", description: "Agregar a tu catálogo" },
   { icon: "✦", label: "Generar post", description: "Para Instagram o Facebook" },
   { icon: "▣", label: "Mejorar imagen", description: "Convierte foto en publicidad" },
   { icon: "◈", label: "Pedir consejo", description: "Al agente de negocios IA" },

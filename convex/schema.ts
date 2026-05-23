@@ -5,6 +5,7 @@ export default defineSchema({
   users: defineTable({
     name: v.string(),
     email: v.string(),
+    password: v.optional(v.string()),
     role: v.union(v.literal("owner"), v.literal("admin"), v.literal("viewer")),
     clerkId: v.optional(v.string()),
     avatar: v.optional(v.string()),
@@ -69,7 +70,7 @@ export default defineSchema({
     name: v.string(),
     description: v.string(),
     price: v.number(),
-    stock: v.number(),
+    stock: v.optional(v.number()),
     images: v.array(v.string()),
     category: v.string(),
     isActive: v.boolean(),

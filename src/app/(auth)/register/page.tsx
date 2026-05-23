@@ -7,7 +7,10 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ROUTES, BUSINESS_CATEGORIES } from "@/lib/constants"
-import { db } from "@/lib/db/mockDb"
+
+import { useMutation } from "convex/react"
+import { api } from "../../../../convex/_generated/api"
+import { useBusinessStore } from "@/store/useBusinessStore"
 
 const registerSchema = z.object({
   name: z.string().min(2, "Mínimo 2 caracteres"),
@@ -24,6 +27,10 @@ export default function RegisterPage() {
   const [step, setStep] = useState<1 | 2>(1)
   const [isLoading, setIsLoading] = useState(false)
   const [emailError, setEmailError] = useState<string | null>(null)
+  
+  const setUser = useBusinessStore((state) => state.setUser)
+  const setBusiness = useBusinessStore((state) => state.setBusiness)
+  const registerMutation = useMutation(api.users.register)
 
   const {
     register,
@@ -36,38 +43,29 @@ export default function RegisterPage() {
   async function handleStep1() {
     const valid = await trigger(["name", "email", "password"])
     if (!valid) return
-
-    const email = getValues("email")
-    const exists = db.users.findByEmail(email)
-    if (exists) {
-      setEmailError("Este correo ya tiene una cuenta. ¿Quieres iniciar sesión?")
-      return
-    }
     setEmailError(null)
     setStep(2)
   }
 
   async function onSubmit(data: RegisterForm) {
     setIsLoading(true)
-    await new Promise(r => setTimeout(r, 1000))
+    setEmailError(null)
+    try {
+      const res = await registerMutation({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        businessName: data.businessName,
+        category: data.category as any,
+      })
 
-    const newUser = db.users.create({
-      name: data.name,
-      email: data.email,
-      role: "owner",
-    })
-
-    db.businesses.create({
-      userId: newUser.id,
-      name: data.businessName,
-      description: "",
-      category: data.category as Parameters<typeof db.businesses.create>[0]["category"],
-      theme: "moderno",
-      tone: "amigable",
-      isPublic: false,
-    })
-
-    router.push(ROUTES.dashboard)
+      setUser(res.user)
+      setBusiness(res.business)
+      router.push(ROUTES.dashboard)
+    } catch (err: any) {
+      setEmailError(err.message || "Ocurrió un error al crear la cuenta. Por favor intenta de nuevo.")
+      setIsLoading(false)
+    }
   }
 
   return (

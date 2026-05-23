@@ -1,30 +1,23 @@
 import { create } from "zustand"
 import { persist } from "zustand/middleware"
-import type { Business, Product, GeneratedContent } from "@/types"
 
 interface BusinessState {
-  currentBusiness: Business | null
-  products: Product[]
-  generatedContent: GeneratedContent[]
+  currentUser: any | null
+  currentBusiness: any | null
   isLoading: boolean
   error: string | null
 
   // Actions
-  setBusiness: (business: Business | null) => void
-  setProducts: (products: Product[]) => void
-  addProduct: (product: Product) => void
-  updateProduct: (id: string, updates: Partial<Product>) => void
-  removeProduct: (id: string) => void
-  addGeneratedContent: (content: GeneratedContent) => void
+  setUser: (user: any | null) => void
+  setBusiness: (business: any | null) => void
   setLoading: (loading: boolean) => void
   setError: (error: string | null) => void
   reset: () => void
 }
 
 const initialState = {
+  currentUser: null,
   currentBusiness: null,
-  products: [],
-  generatedContent: [],
   isLoading: false,
   error: null,
 }
@@ -34,29 +27,9 @@ export const useBusinessStore = create<BusinessState>()(
     (set) => ({
       ...initialState,
 
-      setBusiness: (business) => set({ currentBusiness: business }),
+      setUser: (currentUser) => set({ currentUser }),
 
-      setProducts: (products) => set({ products }),
-
-      addProduct: (product) =>
-        set((state) => ({ products: [product, ...state.products] })),
-
-      updateProduct: (id, updates) =>
-        set((state) => ({
-          products: state.products.map((p) =>
-            p.id === id ? { ...p, ...updates } : p
-          ),
-        })),
-
-      removeProduct: (id) =>
-        set((state) => ({
-          products: state.products.filter((p) => p.id !== id),
-        })),
-
-      addGeneratedContent: (content) =>
-        set((state) => ({
-          generatedContent: [content, ...state.generatedContent].slice(0, 50),
-        })),
+      setBusiness: (currentBusiness) => set({ currentBusiness }),
 
       setLoading: (isLoading) => set({ isLoading }),
 
@@ -67,6 +40,7 @@ export const useBusinessStore = create<BusinessState>()(
     {
       name: "vendemasIA-business",
       partialize: (state) => ({
+        currentUser: state.currentUser,
         currentBusiness: state.currentBusiness,
       }),
     }

@@ -30,6 +30,22 @@ export const getBySlug = query({
 // MUTATIONS
 // =============================================================
 
+export const updateBusiness = mutation({
+  args: {
+    id: v.id("businesses"),
+    updates: v.object({
+      whatsapp: v.optional(v.string()),
+      telegram: v.optional(v.string()),
+      description: v.optional(v.string()),
+      name: v.optional(v.string()),
+    }),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, args.updates)
+    return await ctx.db.get(args.id)
+  },
+})
+
 // Actualizar onboarding de forma progresiva
 export const updateOnboarding = mutation({
   args: {

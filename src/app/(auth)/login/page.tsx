@@ -7,7 +7,9 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { ROUTES } from "@/lib/constants"
-import { db } from "@/lib/db/mockDb"
+import { useConvex } from "convex/react"
+import { api } from "../../../../convex/_generated/api"
+import { useBusinessStore } from "@/store/useBusinessStore"
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -20,6 +22,10 @@ export default function LoginPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const convex = useConvex()
+  const setUser = useBusinessStore((state) => state.setUser)
+  const setBusiness = useBusinessStore((state) => state.setBusiness)
 
   const {
     register,
@@ -31,16 +37,19 @@ export default function LoginPage() {
     setIsLoading(true)
     setError(null)
 
-    await new Promise(r => setTimeout(r, 800))
-    const user = db.users.findByEmail(data.email)
+    try {
+      const res = await convex.query(api.users.login, {
+        email: data.email,
+        password: data.password,
+      })
 
-    if (!user) {
-      setError("No encontramos una cuenta con ese correo. ¿Ya te registraste?")
+      setUser(res.user)
+      setBusiness(res.business)
+      router.push(ROUTES.dashboard)
+    } catch (err: any) {
+      setError(err.message || "Credenciales incorrectas o error en el servidor.")
       setIsLoading(false)
-      return
     }
-
-    router.push(ROUTES.dashboard)
   }
 
   return (

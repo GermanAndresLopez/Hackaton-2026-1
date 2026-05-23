@@ -1,8 +1,10 @@
 "use client"
 
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import { ROUTES } from "@/lib/constants"
+import { useBusinessStore } from "@/store/useBusinessStore"
+import { useEffect } from "react"
 
 const NAV_ITEMS = [
   { href: ROUTES.dashboard,  icon: "⌂",  label: "Dashboard" },
@@ -16,6 +18,28 @@ const NAV_ITEMS = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
+  
+  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
+  const currentUser = useBusinessStore((state) => state.currentUser)
+  const resetStore = useBusinessStore((state) => state.reset)
+
+  useEffect(() => {
+    if (!currentBusiness) {
+      router.push(ROUTES.login)
+    }
+  }, [currentBusiness, router])
+
+  if (!currentBusiness) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f7' }}>
+        <span style={{ width: '32px', height: '32px', border: '3px solid rgba(0,102,204,0.2)', borderTopColor: '#0066cc', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+      </div>
+    )
+  }
+
+  const businessName = currentBusiness.name || "Mi Negocio"
+  const userInitial = (currentUser?.name || businessName).charAt(0).toUpperCase()
 
   return (
     <div style={{
@@ -135,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               Mi Tienda
             </p>
             <Link
-              href="/tienda/mi-negocio"
+              href={`/tienda/${currentBusiness.slug}`}
               target="_blank"
               style={{ fontSize: '12px', color: '#0066cc', textDecoration: 'none', letterSpacing: '-0.12px' }}
             >
@@ -153,7 +177,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 600, fontSize: '13px', flexShrink: 0,
             }}>
-              M
+              {userInitial}
             </div>
             <div style={{ minWidth: 0 }}>
               <p style={{
@@ -161,7 +185,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 letterSpacing: '-0.224px',
               }}>
-                Brownies de María
+                {businessName}
               </p>
               <p style={{ fontSize: '11px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>
                 Plan gratuito
@@ -209,15 +233,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               Configuración
             </button>
-            <button style={{
-              fontSize: '13px', color: '#ef4444',
-              background: 'none', border: 'none', cursor: 'pointer',
-              padding: '6px 12px', borderRadius: '8px',
-              letterSpacing: '-0.224px',
-              transition: 'background 120ms',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.background = '#fff0f0')}
-            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            <button 
+              onClick={() => {
+                resetStore()
+                router.push(ROUTES.login)
+              }}
+              style={{
+                fontSize: '13px', color: '#ef4444',
+                background: 'none', border: 'none', cursor: 'pointer',
+                padding: '6px 12px', borderRadius: '8px',
+                letterSpacing: '-0.224px',
+                transition: 'background 120ms',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = '#fff0f0')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
             >
               Salir
             </button>

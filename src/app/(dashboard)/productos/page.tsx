@@ -2,8 +2,9 @@
 
 import { useState } from "react"
 import { formatPrice } from "@/lib/utils"
-import { currentProducts, db } from "@/lib/db/mockDb"
-import type { Product } from "@/types"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "../../../../convex/_generated/api"
+import { useBusinessStore } from "@/store/useBusinessStore"
 
 const INPUT_STYLE = {
   padding: '10px 14px',
@@ -18,40 +19,100 @@ const INPUT_STYLE = {
   color: '#1d1d1f',
 } as const
 
+const PREDEFINED_CATEGORIES = [
+  "Comida", "Postres", "Ropa", "Electrodomésticos", 
+  "Tecnología", "Belleza", "Servicios", "Artesanías", "Otro"
+]
+
 export default function ProductosPage() {
-  const [products, setProducts] = useState<Product[]>(currentProducts)
+  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
+  const businessId = currentBusiness?._id
+
+  // Consulta reactiva de Convex
+  const products = useQuery(api.products.list, { businessId: businessId }) ?? []
+  
+  // Mutaciones de Convex
+  const createProductMutation = useMutation(api.products.create)
+  const toggleActiveMutation = useMutation(api.products.toggleActive)
+  const deleteProductMutation = useMutation(api.products.deleteProduct)
+
   const [showForm, setShowForm] = useState(false)
-  const [aiLoading, setAiLoading] = useState<string | null>(null)
   const [search, setSearch] = useState("")
+  const [categoryFilter, setCategoryFilter] = useState("Todas")
 
-  const filtered = products.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.category.toLowerCase().includes(search.toLowerCase())
-  )
+  // Estados para el formulario de nuevo producto
+  const [newName, setNewName] = useState("")
+  const [newDesc, setNewDesc] = useState("")
+  const [newPrice, setNewPrice] = useState("")
+  const [categorySelection, setCategorySelection] = useState(PREDEFINED_CATEGORIES[0])
+  const [customCategory, setCustomCategory] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  async function generateAI(productId: string) {
-    setAiLoading(productId)
-    await new Promise(r => setTimeout(r, 2000))
-    const updated = db.products.addAIGenerated(productId, {
-      name: "Nombre mejorado por IA ✨",
-      description: "Descripción optimizada para aumentar tus ventas y conectar con tus clientes.",
-      copy: "¡El producto que todos quieren! No te pierdas esta oportunidad. 🔥",
-      hashtags: ["#ProductoTop", "#Artesanal", "#Calidad", "#Colombia", "#Emprendimiento"],
-    })
-    if (updated) setProducts(prev => prev.map(p => p.id === productId ? updated : p))
-    setAiLoading(null)
+  // Obtener categorías únicas de los productos para el filtro
+  const uniqueCategories = Array.from(new Set(products.map(p => p.category))).filter(Boolean)
+
+  const filtered = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || 
+                          p.category.toLowerCase().includes(search.toLowerCase())
+    const matchesCategory = categoryFilter === "Todas" || p.category === categoryFilter
+    return matchesSearch && matchesCategory
+  })
+
+  async function handleCreateProduct() {
+    if (!businessId) return
+    if (!newName.trim() || !newPrice) return
+
+    const finalCategory = categorySelection === "Otro" ? (customCategory || "General") : categorySelection
+
+    setIsSubmitting(true)
+    try {
+      await createProductMutation({
+        businessId,
+        name: newName,
+        description: newDesc,
+        price: Number(newPrice),
+        images: ["📦"], // Icono/emoji por defecto para nuevos productos
+        category: finalCategory,
+        isActive: true,
+      })
+
+      // Resetear formulario
+      setNewName("")
+      setNewDesc("")
+      setNewPrice("")
+      setCategorySelection(PREDEFINED_CATEGORIES[0])
+      setCustomCategory("")
+      setShowForm(false)
+    } catch (err) {
+      console.error("Error al crear producto en Convex:", err)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  function toggleActive(productId: string) {
-    const updated = db.products.toggleActive(productId)
-    if (updated) setProducts(prev => prev.map(p => p.id === productId ? updated : p))
+  async function handleToggleActive(productId: any) {
+    try {
+      await toggleActiveMutation({ id: productId })
+    } catch (err) {
+      console.error("Error al cambiar estado del producto:", err)
+    }
+  }
+
+  async function handleDeleteProduct(productId: any) {
+    if (confirm("¿Estás seguro de que deseas eliminar este producto de tu catálogo?")) {
+      try {
+        await deleteProductMutation({ id: productId })
+      } catch (err) {
+        console.error("Error al eliminar producto:", err)
+      }
+    }
   }
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
-        <div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+        <div style={{ flex: 1 }}>
           <h2 style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontSize: '28px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.28px', marginBottom: '4px' }}>
             Mis Productos
           </h2>
@@ -69,11 +130,10 @@ export default function ProductosPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4" style={{ marginBottom: '20px' }}>
+      <div className="grid grid-cols-2 lg:grid-cols-2 gap-4" style={{ marginBottom: '20px' }}>
         {[
           { label: "Total productos", value: products.length },
           { label: "Activos", value: products.filter(p => p.isActive).length },
-          { label: "Valor inventario", value: formatPrice(products.reduce((acc, p) => acc + p.price * p.stock, 0)) },
         ].map((s, i) => (
           <div key={i} className="card-apple">
             <p style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontSize: '28px', fontWeight: 600, color: '#0066cc', lineHeight: 1, marginBottom: '4px' }}>
@@ -86,28 +146,40 @@ export default function ProductosPage() {
 
       {/* Product list */}
       <div className="card-apple" style={{ padding: 0, overflow: 'hidden' }}>
-        {/* Search bar */}
-        <div style={{ padding: '16px 24px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        {/* Search and Filters */}
+        <div style={{ padding: '16px 24px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <h3 style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', letterSpacing: '-0.374px' }}>Catálogo</h3>
-          <input
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Buscar producto..."
-            style={{ ...INPUT_STYLE, width: '200px', padding: '8px 14px', borderRadius: '9999px', fontSize: '13px' }}
-          />
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              style={{ ...INPUT_STYLE, width: 'auto', padding: '8px 14px', borderRadius: '9999px', fontSize: '13px', cursor: 'pointer' }}
+            >
+              <option value="Todas">Todas las categorías</option>
+              {uniqueCategories.map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <input
+              type="search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Buscar producto..."
+              style={{ ...INPUT_STYLE, width: '200px', padding: '8px 14px', borderRadius: '9999px', fontSize: '13px' }}
+            />
+          </div>
         </div>
 
         {filtered.length === 0 && (
           <div style={{ padding: '64px', textAlign: 'center', color: '#7a7a7a' }}>
             <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</div>
             <p style={{ fontSize: '17px', color: '#1d1d1f', marginBottom: '4px' }}>Sin resultados</p>
-            <p style={{ fontSize: '14px', color: '#7a7a7a' }}>No se encontraron productos para "{search}"</p>
+            <p style={{ fontSize: '14px', color: '#7a7a7a' }}>No se encontraron productos para los filtros actuales</p>
           </div>
         )}
 
         {filtered.map((product, idx) => (
-          <div key={product.id} style={{
+          <div key={product._id} style={{
             padding: '20px 24px',
             display: 'flex', alignItems: 'flex-start', gap: '16px',
             borderTop: idx > 0 ? '1px solid #e0e0e0' : 'none',
@@ -118,7 +190,7 @@ export default function ProductosPage() {
           >
             {/* Thumbnail */}
             <div style={{ width: '56px', height: '56px', borderRadius: '11px', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0, border: '1px solid #e0e0e0' }}>
-              {product.images[0]}
+              {product.images?.[0] || "📦"}
             </div>
 
             {/* Info */}
@@ -139,41 +211,24 @@ export default function ProductosPage() {
                   <p style={{ fontSize: '13px', color: '#7a7a7a', marginBottom: '8px', letterSpacing: '-0.224px' }}>{product.description}</p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                     <span style={{ fontWeight: 600, fontSize: '14px', color: '#0066cc', letterSpacing: '-0.224px' }}>{formatPrice(product.price)}</span>
-                    <span style={{ fontSize: '13px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>Stock: {product.stock}</span>
-                    <span style={{ fontSize: '13px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{product.category}</span>
+                    <span style={{ fontSize: '13px', color: '#7a7a7a', letterSpacing: '-0.12px', background: '#f0f0f5', padding: '2px 8px', borderRadius: '6px' }}>{product.category}</span>
                   </div>
-
-                  {/* AI generated */}
-                  {product.aiGenerated?.copy && (
-                    <div style={{ marginTop: '12px', padding: '12px 14px', background: '#e8f1fb', borderRadius: '11px', border: '1px solid #c5d9f0' }}>
-                      <p style={{ fontSize: '11px', fontWeight: 600, color: '#0058b3', marginBottom: '4px', letterSpacing: '0.02em', textTransform: 'uppercase' }}>✨ Copy por IA</p>
-                      <p style={{ fontSize: '13px', color: '#1d1d1f', letterSpacing: '-0.224px', lineHeight: 1.4 }}>{product.aiGenerated.copy}</p>
-                      {product.aiGenerated.hashtags && (
-                        <p style={{ fontSize: '12px', color: '#0066cc', marginTop: '4px', letterSpacing: '-0.12px' }}>
-                          {product.aiGenerated.hashtags.join(" ")}
-                        </p>
-                      )}
-                    </div>
-                  )}
                 </div>
 
                 {/* Actions */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
                   <button
-                    onClick={() => generateAI(product.id)}
-                    disabled={aiLoading === product.id}
-                    className="btn-primary"
+                    onClick={() => handleToggleActive(product._id)}
+                    className="btn-secondary"
                     style={{ fontSize: '12px', padding: '6px 14px' }}
                   >
-                    {aiLoading === product.id ? (
-                      <><span style={{ width: '12px', height: '12px', border: '1.5px solid rgba(255,255,255,0.3)', borderTopColor: '#fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} /> Generando...</>
-                    ) : "Mejorar con IA"}
+                    {product.isActive ? "Desactivar" : "Activar"}
                   </button>
                   <button
-                    onClick={() => toggleActive(product.id)}
-                    style={{ fontSize: '12px', color: '#7a7a7a', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.12px', padding: '4px 8px' }}
+                    onClick={() => handleDeleteProduct(product._id)}
+                    style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.12px', padding: '4px 8px' }}
                   >
-                    {product.isActive ? "Desactivar" : "Activar"}
+                    Eliminar
                   </button>
                 </div>
               </div>
@@ -190,7 +245,7 @@ export default function ProductosPage() {
         >
           <div
             className="fade-in"
-            style={{ background: '#fff', width: '100%', maxWidth: '480px', borderRadius: '18px', padding: '32px', boxShadow: 'rgba(0,0,0,0.22) 3px 5px 30px' }}
+            style={{ background: '#fff', width: '100%', maxWidth: '480px', borderRadius: '18px', padding: '32px', boxShadow: 'rgba(0,0,0,0.22) 3px 5px 30px', maxHeight: '90vh', overflowY: 'auto' }}
             onClick={e => e.stopPropagation()}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
@@ -203,35 +258,74 @@ export default function ProductosPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Nombre del producto</label>
-                <input placeholder="Ej: Brownies de chocolate" style={INPUT_STYLE} />
+                <input 
+                  placeholder="Ej: Brownies de chocolate" 
+                  value={newName} 
+                  onChange={e => setNewName(e.target.value)} 
+                  style={INPUT_STYLE} 
+                />
               </div>
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Descripción</label>
-                <textarea placeholder="Describe brevemente tu producto..." rows={3} style={{ ...INPUT_STYLE, resize: 'none' }} />
+                <textarea 
+                  placeholder="Describe brevemente tu producto..." 
+                  value={newDesc} 
+                  onChange={e => setNewDesc(e.target.value)} 
+                  rows={3} 
+                  style={{ ...INPUT_STYLE, resize: 'none' }} 
+                />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Precio</label>
-                  <input type="number" placeholder="15000" style={INPUT_STYLE} />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Stock</label>
-                  <input type="number" placeholder="10" style={INPUT_STYLE} />
-                </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Precio ($ COP)</label>
+                <input 
+                  type="number" 
+                  placeholder="15000" 
+                  value={newPrice} 
+                  onChange={e => setNewPrice(e.target.value)} 
+                  style={INPUT_STYLE} 
+                />
               </div>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Categoría</label>
+                <select 
+                  value={categorySelection} 
+                  onChange={e => setCategorySelection(e.target.value)} 
+                  style={{ ...INPUT_STYLE, cursor: 'pointer' }}
+                >
+                  {PREDEFINED_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+              {categorySelection === "Otro" && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Especifica la categoría</label>
+                  <input 
+                    placeholder="Ej: Accesorios" 
+                    value={customCategory} 
+                    onChange={e => setCustomCategory(e.target.value)} 
+                    style={INPUT_STYLE} 
+                  />
+                </div>
+              )}
               <div style={{ display: 'flex', gap: '12px', paddingTop: '8px' }}>
                 <button
+                  type="button"
                   onClick={() => setShowForm(false)}
                   className="btn-secondary"
                   style={{ flex: 1, justifyContent: 'center', padding: '12px' }}
+                  disabled={isSubmitting}
                 >
                   Cancelar
                 </button>
                 <button
+                  type="button"
+                  onClick={handleCreateProduct}
                   className="btn-primary"
                   style={{ flex: 1, justifyContent: 'center', padding: '12px' }}
+                  disabled={isSubmitting || !newName.trim() || !newPrice || (categorySelection === "Otro" && !customCategory.trim())}
                 >
-                  ✨ Crear con IA
+                  {isSubmitting ? "Creando..." : "Crear producto"}
                 </button>
               </div>
             </div>

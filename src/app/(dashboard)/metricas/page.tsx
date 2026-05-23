@@ -1,23 +1,36 @@
-import { currentMetrics, currentProducts, db, CURRENT_BUSINESS_ID } from "@/lib/db/mockDb"
+"use client"
+
+import { formatPrice } from "@/lib/utils"
+import { useQuery } from "convex/react"
+import { api } from "../../../../convex/_generated/api"
+import { useBusinessStore } from "@/store/useBusinessStore"
 
 export default function MetricasPage() {
-  const metrics = currentMetrics()
-  const products = currentProducts()
-  const stats = db.getStats(CURRENT_BUSINESS_ID)
-  const productViews = (metrics?.productViews ?? {}) as Record<string, number>
+  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
+  const businessId = currentBusiness?._id
 
+  // Consulta de productos reales
+  const products = useQuery(api.products.list, { businessId }) ?? []
+  
+  // Usar visitas y estadísticas simuladas de forma estática hasta integrar la tabla de métricas en Convex
+  const totalProducts = products.length
+  const activeProducts = products.filter(p => p.isActive).length
+
+  // Simular algunas visualizaciones basadas en los productos del catálogo
   const topProducts = products
-    .map(p => ({ ...p, views: productViews[p.id] ?? 0 }))
-    .sort((a, b) => b.views - a.views)
+    .map((p, index) => ({ 
+      ...p, 
+      views: 120 - index * 15 > 0 ? 120 - index * 15 : 5 
+    }))
     .slice(0, 5)
 
   const maxViews = topProducts[0]?.views ?? 1
 
   const KPIS = [
-    { label: "Visitas a tienda",    value: String(stats.totalViews),       change: "+23% esta semana" },
-    { label: "Mensajes clientes",   value: String(stats.totalMessages),    change: "+12% esta semana" },
-    { label: "Productos activos",   value: String(stats.activeProducts),   change: `${stats.totalProducts} en total` },
-    { label: "Contenido generado",  value: String(stats.contentGenerated), change: "+5 esta semana" },
+    { label: "Visitas a tienda",    value: "254",          change: "+23% esta semana" },
+    { label: "Mensajes clientes",   value: "67",           change: "+12% esta semana" },
+    { label: "Productos activos",   value: String(activeProducts),   change: `${totalProducts} en total` },
+    { label: "Contenido generado",  value: "14",           change: "+5 esta semana" },
   ]
 
   return (
@@ -52,27 +65,35 @@ export default function MetricasPage() {
           <h3 style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '20px', letterSpacing: '-0.374px' }}>
             Productos más vistos
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {topProducts.map((p) => (
-              <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '24px', width: '32px', textAlign: 'center', flexShrink: 0 }}>{p.images[0]}</span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.224px' }}>
-                      {p.name}
-                    </p>
-                    <p style={{ fontSize: '13px', fontWeight: 600, color: '#0066cc', marginLeft: '8px', flexShrink: 0, letterSpacing: '-0.224px' }}>{p.views}</p>
-                  </div>
-                  <div style={{ height: '4px', background: '#f5f5f7', borderRadius: '9999px', overflow: 'hidden' }}>
-                    <div style={{
-                      height: '100%', background: '#0066cc', borderRadius: '9999px',
-                      width: `${(p.views / maxViews) * 100}%`,
-                    }} />
+          {topProducts.length === 0 ? (
+            <p style={{ fontSize: '14px', color: '#7a7a7a', textAlign: 'center', padding: '24px' }}>
+              No tienes productos suficientes en tu catálogo para generar esta métrica.
+            </p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {topProducts.map((p) => (
+                <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '24px', width: '32px', textAlign: 'center', flexShrink: 0 }}>
+                    {p.images?.[0] || "📦"}
+                  </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.224px' }}>
+                        {p.name}
+                      </p>
+                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#0066cc', marginLeft: '8px', flexShrink: 0, letterSpacing: '-0.224px' }}>{p.views}</p>
+                    </div>
+                    <div style={{ height: '4px', background: '#f5f5f7', borderRadius: '9999px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%', background: '#0066cc', borderRadius: '9999px',
+                        width: `${(p.views / maxViews) * 100}%`,
+                      }} />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* AI Insights */}
@@ -105,7 +126,6 @@ export default function MetricasPage() {
         </h3>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
           {ACTIVITY.map((a, i) => (
-            /* .row-hover handles CSS hover — no JS event handlers */
             <div key={i} className="row-hover" style={{
               display: 'flex', alignItems: 'center', gap: '14px',
               padding: '10px 12px', borderRadius: '11px',
