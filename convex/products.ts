@@ -94,22 +94,41 @@ export const deleteProduct = mutation({
   },
 })
 
-// Registrar visualización de un producto (+1 a views)
+// Registrar visualización de un producto (+1 a views y log diario en metrics)
 export const recordProductView = mutation({
   args: {
     productId: v.id("products"),
   },
   handler: async (ctx, args) => {
     const product = await ctx.db.get(args.productId)
-    if (!product) {
-      throw new Error("Producto no encontrado")
+    if (!product) return { success: false }
+
+    // Incrementar contador total en el producto
+    await ctx.db.patch(args.productId, { views: (product.views || 0) + 1 })
+
+    // Loguear vista diaria en la tabla metrics (para gráfico por día de semana)
+    const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
+    const existing = await ctx.db
+      .query("metrics")
+      .withIndex("by_date", (q) => q.eq("businessId", product.businessId).eq("date", today))
+      .unique()
+
+    if (existing) {
+      await ctx.db.patch(existing._id, {
+        productViews: (existing.productViews || 0) + 1,
+      })
+    } else {
+      await ctx.db.insert("metrics", {
+        businessId: product.businessId,
+        date: today,
+        productViews: 1,
+        productQueries: 0,
+        totalMessages: 0,
+        contentGenerated: 0,
+      })
     }
-    
-    const currentViews = product.views || 0
-    await ctx.db.patch(args.productId, {
-      views: currentViews + 1,
-    })
-    return { success: true, views: currentViews + 1 }
+
+    return { success: true }
   },
 })
 

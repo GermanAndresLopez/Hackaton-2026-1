@@ -6,154 +6,212 @@ export const getDashboardMetrics = query({
   handler: async (ctx, args) => {
     const { businessId } = args
 
-    // 1. Obtener productos para calcular total, activos y top vistos
+    // ── 1. Productos ──────────────────────────────────────────────────────────
     const products = await ctx.db
       .query("products")
       .withIndex("by_businessId", (q) => q.eq("businessId", businessId))
       .collect()
 
-    const totalProducts = products.length
+    const totalProducts  = products.length
     const activeProducts = products.filter(p => p.isActive).length
-    
-    // Top productos más vistos
-    const sortedProducts = [...products].sort((a, b) => (b.views || 0) - (a.views || 0))
-    const topProducts = sortedProducts.slice(0, 5).map(p => ({
-      _id: p._id,
-      name: p.name,
-      views: p.views || 0
-    }))
-    
-    // Calcular total de visitas a la tienda sumando visitas de todos los productos
-    const totalViews = products.reduce((sum, p) => sum + (p.views || 0), 0)
+    const totalViews     = products.reduce((sum, p) => sum + (p.views || 0), 0)
 
-    // 2. Obtener total de mensajes recibidos
+    // Top 5 productos más vistos
+    const topProducts = [...products]
+      .sort((a, b) => (b.views || 0) - (a.views || 0))
+      .slice(0, 5)
+      .map(p => ({ _id: p._id, name: p.name, views: p.views || 0, isActive: p.isActive }))
+
+    // Productos por categoría
+    const categoryCount: Record<string, number> = {}
+    products.forEach(p => {
+      const cat = (p as any).category || "otro"
+      categoryCount[cat] = (categoryCount[cat] || 0) + 1
+    })
+    const productsByCategory = Object.entries(categoryCount)
+      .map(([cat, count]) => ({ cat, count }))
+      .sort((a, b) => b.count - a.count)
+
+    // ── 2. Conversaciones ─────────────────────────────────────────────────────
     const conversations = await ctx.db
       .query("conversations")
       .withIndex("by_businessId", (q) => q.eq("businessId", businessId))
       .collect()
-      
-    // Sumamos la cantidad de mensajes que tengan rol "user" (mensajes del cliente)
+
+    const totalConversations = conversations.length
+
+    // Total de mensajes de usuario (cliente)
     let totalMessages = 0
-    for (const conv of conversations) {
-      const userMessages = conv.messages.filter(m => m.role === "user").length
-      totalMessages += userMessages
-    }
-
-    // 3. Obtener cantidad de contenido generado
-    const generatedContent = await ctx.db
-      .query("generatedContent")
-      .withIndex("by_businessId", (q) => q.eq("businessId", businessId))
-      .collect()
-      
-    const totalContentGenerated = generatedContent.length
-
-    // 4. Actividad reciente (Simularemos una línea de tiempo real combinando los últimos eventos)
-    // Para simplificar, buscaremos los últimos productos actualizados, y los últimos contenidos generados.
-    const recentProducts = [...products].sort((a, b) => b._creationTime - a._creationTime).slice(0, 2)
-    const recentContent = [...generatedContent].sort((a, b) => b._creationTime - a._creationTime).slice(0, 2)
-    
-    const activityList: any[] = []
-    
-    for (const p of recentProducts) {
-      activityList.push({
-        type: "product",
-        label: "Producto actualizado",
-        timeMs: p._creationTime,
-        value: p.name,
-        positive: false
-      })
-    }
-    
-    for (const c of recentContent) {
-      activityList.push({
-        type: "content",
-        label: "Marketing generado por IA",
-        timeMs: c._creationTime,
-        value: c.type === "marketing_post" ? "Post Instagram" : "Texto",
-        positive: false
-      })
-    }
-    
-    // Si hubo visitas recientes, podríamos añadir una. Como no tenemos timestamps por visita individual, agregamos una genérica si hay visitas
-    if (totalViews > 0) {
-      activityList.push({
-        type: "view",
-        label: "Nueva visita a tu tienda",
-        timeMs: Date.now() - 1000 * 60 * 5, // Hace 5 min aprox
-        value: "+1 visita",
-        positive: true
-      })
-    }
-    
-    // 5. Historial de los últimos 7 días (para el gráfico de tendencias)
-    const sevenDaysAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000
-    
-    // Obtener conversaciones de los últimos 7 días
-    const recentConversationsForTrend = conversations.filter(c => c._creationTime >= sevenDaysAgoMs)
-    
-    // Obtener contenidos de los últimos 7 días
-    const recentContentForTrend = generatedContent.filter(c => c._creationTime >= sevenDaysAgoMs)
-    
-    // Agrupar por día (e.g. "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom")
-    const daysOfWeek = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
-    const last7Days = Array.from({ length: 7 }).map((_, i) => {
-      // Calculamos cada día y restamos la diferencia respecto a hoy
-      const date = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000)
-      return {
-        dateStr: date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' }),
-        dayLabel: daysOfWeek[date.getDay()],
-        conversations: 0,
-        content: 0
-      }
-    })
-    
-    // Rellenar datos
-    recentConversationsForTrend.forEach(c => {
-      const cDateString = new Date(c._creationTime).toDateString()
-      const dayIndex = last7Days.findIndex(d => {
-        // Encontrar qué índice de last7Days corresponde a la fecha de creación
-        const targetDate = new Date(Date.now() - (6 - last7Days.indexOf(d)) * 24 * 60 * 60 * 1000)
-        return cDateString === targetDate.toDateString()
-      })
-      if (dayIndex !== -1) {
-        last7Days[dayIndex].conversations += 1
-      }
-    })
-    
-    recentContentForTrend.forEach(c => {
-      const cDateString = new Date(c._creationTime).toDateString()
-      const dayIndex = last7Days.findIndex(d => {
-        const targetDate = new Date(Date.now() - (6 - last7Days.indexOf(d)) * 24 * 60 * 60 * 1000)
-        return cDateString === targetDate.toDateString()
-      })
-      if (dayIndex !== -1) {
-        last7Days[dayIndex].content += 1
-      }
+    conversations.forEach(conv => {
+      totalMessages += conv.messages.filter((m: any) => m.role === "user").length
     })
 
-    // 6. Distribución de plataformas (Telegram vs WhatsApp)
+    const avgMessagesPerConv = totalConversations > 0
+      ? Math.round((totalMessages / totalConversations) * 10) / 10
+      : 0
+
+    // Distribución de plataformas
     let telegramCount = 0
     let whatsappCount = 0
     conversations.forEach(c => {
       if (c.platform === "telegram") telegramCount++
-      if (c.platform === "whatsapp") whatsappCount++
+      else if (c.platform === "whatsapp") whatsappCount++
     })
 
+    // Tasa de conversión: (conversaciones / visitas) * 100
+    const conversionRate = totalViews > 0
+      ? Math.round((totalConversations / totalViews) * 1000) / 10  // 1 decimal
+      : 0
+
+    // ── 3. Contenido generado ─────────────────────────────────────────────────
+    const generatedContent = await ctx.db
+      .query("generatedContent")
+      .withIndex("by_businessId", (q) => q.eq("businessId", businessId))
+      .collect()
+
+    const totalContentGenerated = generatedContent.length
+
+    // Breakdown por tipo de contenido
+    const contentTypeCount: Record<string, number> = {}
+    generatedContent.forEach(c => {
+      const t = (c as any).type || "otro"
+      contentTypeCount[t] = (contentTypeCount[t] || 0) + 1
+    })
+    const contentByType = Object.entries(contentTypeCount)
+      .map(([type, count]) => ({ type, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5)
+
+    // ── 4. Tendencia últimos 7 días ───────────────────────────────────────────
+    const sevenDaysAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000
+    const daysOfWeek = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
+
+    const last7Days = Array.from({ length: 7 }).map((_, i) => {
+      const date = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000)
+      return {
+        dateStr:   date.toLocaleDateString("es-CO", { day: "numeric", month: "short" }),
+        dayLabel:  daysOfWeek[date.getDay()],
+        dayOfWeek: date.getDay(),
+        conversations: 0,
+        content: 0,
+        views: 0,
+      }
+    })
+
+    conversations
+      .filter(c => c._creationTime >= sevenDaysAgoMs)
+      .forEach(c => {
+        const cDs = new Date(c._creationTime).toDateString()
+        const idx = last7Days.findIndex((d, i) => {
+          const t = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000)
+          return cDs === t.toDateString()
+        })
+        if (idx !== -1) last7Days[idx].conversations += 1
+      })
+
+    generatedContent
+      .filter(c => c._creationTime >= sevenDaysAgoMs)
+      .forEach(c => {
+        const cDs = new Date(c._creationTime).toDateString()
+        const idx = last7Days.findIndex((d, i) => {
+          const t = new Date(Date.now() - (6 - i) * 24 * 60 * 60 * 1000)
+          return cDs === t.toDateString()
+        })
+        if (idx !== -1) last7Days[idx].content += 1
+      })
+
+    // Día con más actividad total en los últimos 7 días
+    const bestDay = last7Days.reduce(
+      (best, d) => (d.conversations + d.content > best.conversations + best.content ? d : best),
+      last7Days[0]
+    )
+
+    // Vistas por día de la semana (desde tabla metrics con fecha)
+    const allMetrics = await ctx.db
+      .query("metrics")
+      .withIndex("by_businessId", (q) => q.eq("businessId", businessId))
+      .collect()
+
+    const viewsByDow   = [0, 0, 0, 0, 0, 0, 0] // Dom→Sáb
+    allMetrics.forEach(m => {
+      if (!m.date) return
+      const dow = new Date(m.date + "T12:00:00").getDay()
+      viewsByDow[dow] += (m.productViews as number) || 0
+    })
+
+    // Clicks de WhatsApp por día de la semana (conversations platform=whatsapp)
+    const waClicksByDow = [0, 0, 0, 0, 0, 0, 0]
+    conversations.forEach(c => {
+      if (c.platform === "whatsapp") {
+        const dow = new Date(c._creationTime).getDay()
+        waClicksByDow[dow] += 1
+      }
+    })
+
+    const weekdayActivity = daysOfWeek.map((label, i) => ({
+      label,
+      views:     viewsByDow[i],
+      waClicks:  waClicksByDow[i],
+    }))
+
+    // ── 5. Actividad reciente ─────────────────────────────────────────────────
+    const recentProducts = [...products]
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, 2)
+    const recentContent = [...generatedContent]
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, 2)
+    const recentConvs = [...conversations]
+      .sort((a, b) => b._creationTime - a._creationTime)
+      .slice(0, 2)
+
+    const activityList: any[] = []
+
+    recentProducts.forEach(p => activityList.push({
+      type: "product", label: "Producto agregado al catálogo",
+      timeMs: p._creationTime, value: p.name, positive: false,
+    }))
+    recentContent.forEach(c => activityList.push({
+      type: "content", label: "Contenido generado por IA",
+      timeMs: c._creationTime,
+      value: (c as any).type === "marketing_post" ? "Post" : "Texto",
+      positive: false,
+    }))
+    recentConvs.forEach(c => activityList.push({
+      type: "chat", label: "Nueva conversación",
+      timeMs: c._creationTime,
+      value: c.platform === "telegram" ? "Telegram" : "WhatsApp",
+      positive: true,
+    }))
+    if (totalViews > 0) {
+      activityList.push({
+        type: "view", label: "Visita a tu tienda",
+        timeMs: Date.now() - 1000 * 60 * 3,
+        value: "+1 visita", positive: true,
+      })
+    }
     activityList.sort((a, b) => b.timeMs - a.timeMs)
 
     return {
+      // KPIs
       totalViews,
       totalMessages,
+      totalConversations,
+      totalContentGenerated,
       activeProducts,
       totalProducts,
-      totalContentGenerated,
+      avgMessagesPerConv,
+      conversionRate,
+      // Charts
       topProducts,
-      activity: activityList.slice(0, 5), // Solo 5 elementos más recientes
-      platformDistribution: {
-        telegram: telegramCount,
-        whatsapp: whatsappCount
-      },
-      dailyTrend: last7Days
+      productsByCategory,
+      contentByType,
+      platformDistribution: { telegram: telegramCount, whatsapp: whatsappCount },
+      dailyTrend: last7Days,
+      weekdayActivity,
+      bestDay,
+      // Feed
+      activity: activityList.slice(0, 6),
     }
-  }
+  },
 })

@@ -3,272 +3,258 @@
 import { useQuery } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import { useBusinessStore } from "@/store/useBusinessStore"
-import { Eye, MessageCircle, Sparkles, Package, TrendingUp } from "lucide-react"
+import {
+  Eye, MessageCircle, Sparkles, Package, TrendingUp,
+  ArrowUpRight, BarChart2,
+} from "lucide-react"
 
-// Helper function to format relative time for recent events
-const formatRelativeTime = (timeMs: number) => {
-  const diff = Date.now() - timeMs
-  const mins = Math.floor(diff / (1000 * 60))
-  const hours = Math.floor(mins / 60)
-  const days = Math.floor(hours / 24)
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
-  if (mins < 1) return "Hace unos momentos"
-  if (mins < 60) return `Hace ${mins} ${mins === 1 ? 'minuto' : 'minutos'}`
-  if (hours < 24) return `Hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`
-  return `Hace ${days} ${days === 1 ? 'día' : 'días'}`
+const relTime = (ms: number) => {
+  const diff = Date.now() - ms
+  const m = Math.floor(diff / 60000)
+  const h = Math.floor(m / 60)
+  const d = Math.floor(h / 24)
+  if (m < 1) return "Hace unos momentos"
+  if (m < 60) return `Hace ${m} min`
+  if (h < 24) return `Hace ${h} h`
+  return `Hace ${d} día${d !== 1 ? "s" : ""}`
 }
 
+const CONTENT_LABELS: Record<string, string> = {
+  marketing_post: "Post de marketing",
+  image:          "Imagen generada",
+  slogan:         "Slogan",
+  description:    "Descripción",
+  otro:           "Otro contenido",
+}
+
+// ─── Skeleton ───────────────────────────────────────────────────────────────
+
+function Skeleton({ w, h, r = 8 }: { w: string; h: number; r?: number }) {
+  return (
+    <div
+      className="animate-pulse"
+      style={{ width: w, height: h, borderRadius: r, background: '#ebebeb' }}
+    />
+  )
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function MetricasPage() {
-  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
+  const currentBusiness = useBusinessStore(s => s.currentBusiness)
   const businessId = currentBusiness?._id
 
-  // Convex Query for Real Dashboard Metrics
-  const dashboardData = useQuery(
-    api.metrics.getDashboardMetrics, 
+  const data = useQuery(
+    api.metrics.getDashboardMetrics,
     businessId ? { businessId } : "skip"
   )
 
-  // ── LOADING STATE (Skeletons) ──
-  if (dashboardData === undefined) {
+  // Loading
+  if (data === undefined) {
     return (
-      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        <div style={{ marginBottom: '24px' }}>
-          <div className="animate-pulse bg-gray-200" style={{ width: '140px', height: '32px', borderRadius: '8px', marginBottom: '8px' }} />
-          <div className="animate-pulse bg-gray-100" style={{ width: '260px', height: '18px', borderRadius: '4px' }} />
+      <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+        <div style={{ marginBottom: "28px" }}>
+          <Skeleton w="160px" h={28} />
+          <div style={{ marginTop: "8px" }}><Skeleton w="240px" h={16} /></div>
         </div>
-
-        {/* KPIs Skeletons */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: '24px' }}>
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="card-apple" style={{ minHeight: '110px' }}>
-              <div className="animate-pulse bg-gray-200" style={{ width: '60px', height: '36px', borderRadius: '6px', marginBottom: '10px' }} />
-              <div className="animate-pulse bg-gray-100" style={{ width: '110px', height: '14px', borderRadius: '4px', marginBottom: '6px' }} />
-              <div className="animate-pulse bg-gray-100" style={{ width: '70px', height: '10px', borderRadius: '3px' }} />
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "14px", marginBottom: "20px" }}>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="card-apple" style={{ minHeight: 110 }}>
+              <Skeleton w="60px" h={32} /><div style={{ marginTop: 10 }}><Skeleton w="100px" h={14} /></div>
             </div>
           ))}
         </div>
-
-        {/* Charts Skeletons */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5" style={{ marginBottom: '24px' }}>
-          <div className="card-apple" style={{ height: '280px' }}>
-            <div className="animate-pulse bg-gray-200" style={{ width: '180px', height: '18px', borderRadius: '4px', marginBottom: '24px' }} />
-            <div className="animate-pulse bg-gray-100" style={{ width: '100%', height: '160px', borderRadius: '12px' }} />
-          </div>
-          <div className="card-apple" style={{ height: '280px' }}>
-            <div className="animate-pulse bg-gray-200" style={{ width: '180px', height: '18px', borderRadius: '4px', marginBottom: '24px' }} />
-            <div className="animate-pulse bg-gray-100" style={{ width: '100%', height: '160px', borderRadius: '12px' }} />
-          </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+          {[...Array(2)].map((_, i) => <div key={i} className="card-apple" style={{ height: 200 }}><Skeleton w="160px" h={18} /></div>)}
         </div>
       </div>
     )
   }
 
-  // If there's no business selected
-  if (!businessId) {
-    return (
-      <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center', padding: '64px 24px' }}>
-        <Package size={48} style={{ color: '#c0c0c0', margin: '0 auto 16px' }} />
-        <h3 style={{ fontSize: '18px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px' }}>Ningún negocio seleccionado</h3>
-        <p style={{ fontSize: '14px', color: '#7a7a7a' }}>Selecciona o crea un negocio en tu panel de control para ver las métricas.</p>
-      </div>
-    )
-  }
+  if (!businessId) return null
 
   const {
-    totalViews,
-    totalMessages,
-    activeProducts,
-    totalProducts,
-    totalContentGenerated,
-    topProducts,
-    activity,
-    platformDistribution,
-    dailyTrend
-  } = dashboardData
+    totalViews            = 0,
+    totalContentGenerated = 0,
+    activeProducts        = 0,
+    totalProducts         = 0,
+    topProducts           = [],
+    contentByType         = [],
+    platformDistribution  = { telegram: 0, whatsapp: 0 },
+    weekdayActivity       = [],
+    activity              = [],
+  } = data ?? {}
 
-  // Prepare KPI objects
+  const totalChats = (platformDistribution?.telegram || 0) + (platformDistribution?.whatsapp || 0)
+  const maxViews   = topProducts[0]?.views ?? 1
+
   const KPIS = [
-    { label: "Visitas a tienda",    value: String(totalViews),          change: "Visualizaciones totales" },
-    { label: "Productos activos",   value: String(activeProducts),      change: `${totalProducts} en catálogo` },
-    { label: "Contenido generado",  value: String(totalContentGenerated), change: "Marketing e imágenes" },
+    { icon: Eye,      label: "Visitas a tienda",   value: totalViews,            sub: "Total acumulado",        color: "#0066cc", bg: "#e8f1fb" },
+    { icon: Sparkles, label: "Contenido generado", value: totalContentGenerated, sub: "Marketing e imágenes",   color: "#d97706", bg: "#fef3c7" },
   ]
 
-  // Top views calculation
-  const maxViews = topProducts[0]?.views ?? 1
-
-  // Platform Doughnut calculations
-  const totalChats = (platformDistribution?.telegram || 0) + (platformDistribution?.whatsapp || 0)
-  const telegramPercent = totalChats > 0 ? Math.round((platformDistribution.telegram / totalChats) * 100) : 0
-  const whatsappPercent = totalChats > 0 ? Math.round((platformDistribution.whatsapp / totalChats) * 100) : 0
-
-  // SVG Area Trend calculations
-  const maxTrendVal = Math.max(
-    ...dailyTrend.map((d: any) => Math.max(d.conversations, d.content)),
-    4 // baseline height scale
-  )
-  
-  const svgWidth = 500
-  const svgHeight = 160
-  const paddingX = 30
-  const paddingY = 20
-  const graphWidth = svgWidth - paddingX * 2
-  const graphHeight = svgHeight - paddingY * 2
-  
-  const getCoords = (index: number, val: number) => {
-    const x = paddingX + (index * graphWidth) / 6
-    const y = svgHeight - paddingY - (val / maxTrendVal) * graphHeight
-    return { x, y }
-  }
-
-  // Conversation Trend coords
-  const convPoints = dailyTrend.map((d: any, i: number) => getCoords(i, d.conversations))
-  const convLinePath = convPoints.length > 0 
-    ? `M ${convPoints.map((p: any) => `${p.x},${p.y}`).join(' L ')}` 
-    : ''
-  const convAreaPath = convPoints.length > 0 
-    ? `${convLinePath} L ${convPoints[convPoints.length - 1].x},${svgHeight - paddingY} L ${convPoints[0].x},${svgHeight - paddingY} Z` 
-    : ''
-
-  // Content Trend coords
-  const contentPoints = dailyTrend.map((d: any, i: number) => getCoords(i, d.content))
-  const contentLinePath = contentPoints.length > 0 
-    ? `M ${contentPoints.map((p: any) => `${p.x},${p.y}`).join(' L ')}` 
-    : ''
-  const contentAreaPath = contentPoints.length > 0 
-    ? `${contentLinePath} L ${contentPoints[contentPoints.length - 1].x},${svgHeight - paddingY} L ${contentPoints[0].x},${svgHeight - paddingY} Z` 
-    : ''
+  const maxViews2   = Math.max(...(weekdayActivity as any[]).map((d: any) => d.views   || 0), 1)
+  const maxWa       = Math.max(...(weekdayActivity as any[]).map((d: any) => d.waClicks || 0), 1)
+  const maxWeekday  = Math.max(maxViews2, maxWa, 1)
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '32px' }}>
-      
-      {/* Title */}
-      <div style={{ marginBottom: '24px' }}>
-        <h2 style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontSize: '28px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.28px', marginBottom: '4px' }}>
+    <div style={{ maxWidth: "1100px", margin: "0 auto", paddingBottom: "40px" }}>
+
+      {/* Header */}
+      <div style={{ marginBottom: "28px" }}>
+        <h2 style={{ fontFamily: '"SF Pro Display", system-ui, sans-serif', fontSize: "28px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.5px", marginBottom: "4px" }}>
           Métricas
         </h2>
-        <p style={{ fontSize: '14px', color: '#7a7a7a', letterSpacing: '-0.224px' }}>
+        <p style={{ fontSize: "14px", color: "#7a7a7a" }}>
           Entiende cómo está creciendo tu negocio
         </p>
       </div>
 
-      {/* KPIs Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4" style={{ marginBottom: '24px' }}>
-        {KPIS.map((kpi, i) => (
-          <div key={i} className="card-apple" style={{ background: '#fff' }}>
-            <p style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontSize: '34px', fontWeight: 600, color: '#0066cc', lineHeight: 1, marginBottom: '6px' }}>
-              {kpi.value}
+      {/* KPI Row 1 */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: "14px", marginBottom: "14px" }}>
+        {KPIS.map((k, i) => (
+          <div key={i} className="card-apple" style={{ background: "#fff" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: k.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <k.icon size={17} style={{ color: k.color }} />
+              </div>
+              <ArrowUpRight size={14} style={{ color: "#c0c0c0" }} />
+            </div>
+            <p style={{ fontFamily: '"SF Pro Display", system-ui, sans-serif', fontSize: "32px", fontWeight: 700, color: k.color, lineHeight: 1, letterSpacing: "-1px", marginBottom: "6px" }}>
+              {k.value}
             </p>
-            <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', marginBottom: '2px', letterSpacing: '-0.224px' }}>
-              {kpi.label}
-            </p>
-            <p style={{ fontSize: '12px', color: '#8e8e93', fontWeight: 500, letterSpacing: '-0.12px' }}>
-              {kpi.change}
-            </p>
+            <p style={{ fontSize: "13px", fontWeight: 600, color: "#1d1d1f", marginBottom: "2px", letterSpacing: "-0.2px" }}>{k.label}</p>
+            <p style={{ fontSize: "11px", color: "#8e8e93" }}>{k.sub}</p>
           </div>
         ))}
       </div>
 
-      {/* Visual Analytics / Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5" style={{ marginBottom: '24px' }}>
-        
-      
+      {/* Productos activos + Gráfico días de la semana */}
+      <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "14px", marginBottom: "20px" }}>
 
-        {/* Channels Doughnut Chart Card */}
-        <div className="card-apple" style={{ display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', letterSpacing: '-0.3px', marginBottom: '16px' }}>
-            Distribución de Canales de Cliente
-          </h3>
-          
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-around', gap: '20px', flex: 1 }}>
-            <svg width="120" height="120" viewBox="0 0 100 100">
-              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f4f4f7" strokeWidth="12" />
-              
-              {totalChats === 0 ? (
-                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#d1d5db" strokeWidth="10" strokeDasharray="6,4" />
-              ) : (
-                <>
-                  {whatsappPercent > 0 && (
-                    <circle 
-                      cx="50" cy="50" r="40" 
-                      fill="transparent" 
-                      stroke="#25D366" 
-                      strokeWidth="12" 
-                      strokeDasharray={`${(whatsappPercent / 100) * 251.3} 251.3`}
-                      strokeDashoffset="0"
-                      transform="rotate(-90 50 50)"
-                    />
-                  )}
-                  {telegramPercent > 0 && (
-                    <circle 
-                      cx="50" cy="50" r="40" 
-                      fill="transparent" 
-                      stroke="#0088cc" 
-                      strokeWidth="12" 
-                      strokeDasharray={`${(telegramPercent / 100) * 251.3} 251.3`}
-                      strokeDashoffset={`-${(whatsappPercent / 100) * 251.3}`}
-                      transform="rotate(-90 50 50)"
-                    />
-                  )}
-                </>
-              )}
-              
-              <text x="50" y="47" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '11px', fontWeight: 700, fill: '#1d1d1f', fontFamily: 'system-ui' }}>
-                {totalChats}
-              </text>
-              <text x="50" y="58" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: '7px', fontWeight: 600, fill: '#8e8e93', textTransform: 'uppercase', fontFamily: 'system-ui' }}>
-                Chats
-              </text>
-            </svg>
-            
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '140px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: '#25D366' }} />
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f' }}>WhatsApp</span>
-                <span style={{ fontSize: '12px', color: '#8e8e93', marginLeft: 'auto' }}>{whatsappPercent}% ({platformDistribution?.whatsapp || 0})</span>
+        {/* Productos activos */}
+        <div style={{ background: "#d1fae5", borderRadius: "16px", padding: "20px", border: "1px solid #bbf7d0", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "12px" }}>
+            <Package size={14} style={{ color: "#059669" }} />
+            <span style={{ fontSize: "11px", fontWeight: 600, color: "#059669" }}>Productos activos</span>
+          </div>
+          <p style={{ fontFamily: '"SF Pro Display", system-ui, sans-serif', fontSize: "40px", fontWeight: 700, color: "#1d1d1f", lineHeight: 1, letterSpacing: "-1.5px" }}>
+            {activeProducts}
+          </p>
+          <p style={{ fontSize: "11px", color: "#7a7a7a", marginTop: "8px" }}>{totalProducts} en catálogo</p>
+        </div>
+
+        {/* Barras por día de la semana */}
+        <div className="card-apple">
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: 32, height: 32, borderRadius: 9, background: "#e8f1fb", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <BarChart2 size={15} style={{ color: "#0066cc" }} />
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '10px', height: '10px', borderRadius: '3px', background: '#0088cc' }} />
-                <span style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f' }}>Telegram</span>
-                <span style={{ fontSize: '12px', color: '#8e8e93', marginLeft: 'auto' }}>{telegramPercent}% ({platformDistribution?.telegram || 0})</span>
+              <div>
+                <h3 style={{ fontSize: "14px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.3px" }}>Vistas y pedidos por día</h3>
+                <p style={{ fontSize: "11px", color: "#8e8e93" }}>Vistas a tienda · Clicks en "Pedir por WhatsApp"</p>
+              </div>
+            </div>
+            {/* Leyenda */}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: "#0066cc" }} />
+                <span style={{ fontSize: "10px", color: "#7a7a7a" }}>Vistas</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                <div style={{ width: 8, height: 8, borderRadius: 2, background: "#25D366" }} />
+                <span style={{ fontSize: "10px", color: "#7a7a7a" }}>WhatsApp</span>
               </div>
             </div>
           </div>
-        </div>
 
+          {weekdayActivity.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "16px 0" }}>
+              <p style={{ fontSize: "13px", color: "#8e8e93" }}>Sin datos todavía</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", gap: "6px", height: "100px", alignItems: "flex-end" }}>
+              {(weekdayActivity as any[]).map((d: any, i: number) => {
+                const vPct  = ((d.views   || 0) / maxWeekday) * 100
+                const wPct  = ((d.waClicks || 0) / maxWeekday) * 100
+                const isMaxV = (d.views || 0) === maxViews2 && maxViews2 > 1
+                const isMaxW = (d.waClicks || 0) === maxWa && maxWa > 1
+                return (
+                  <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", height: "100%", justifyContent: "flex-end", gap: "3px" }}>
+                    {/* Números encima */}
+                    <div style={{ display: "flex", gap: "2px", marginBottom: "2px" }}>
+                      {(d.views || 0) > 0 && (
+                        <span style={{ fontSize: "9px", fontWeight: 700, color: isMaxV ? "#0066cc" : "#b0b0b0" }}>{d.views}</span>
+                      )}
+                      {(d.waClicks || 0) > 0 && (
+                        <span style={{ fontSize: "9px", fontWeight: 700, color: isMaxW ? "#25D366" : "#b0b0b0" }}>·{d.waClicks}</span>
+                      )}
+                    </div>
+                    {/* Barras dobles */}
+                    <div style={{ width: "100%", display: "flex", gap: "2px", alignItems: "flex-end", height: "72px" }}>
+                      <div style={{
+                        flex: 1, borderRadius: "4px 4px 0 0", minHeight: "3px",
+                        height: `${Math.max(vPct, (d.views || 0) > 0 ? 4 : 0)}%`,
+                        background: isMaxV ? "#0066cc" : "#c5d9f0",
+                      }} />
+                      <div style={{
+                        flex: 1, borderRadius: "4px 4px 0 0", minHeight: "3px",
+                        height: `${Math.max(wPct, (d.waClicks || 0) > 0 ? 4 : 0)}%`,
+                        background: isMaxW ? "#25D366" : "#bbf7d0",
+                      }} />
+                    </div>
+                    <span style={{ fontSize: "10px", color: "#8e8e93", marginTop: "2px" }}>{d.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        
-        {/* Top Products View Progress Card */}
+      {/* Row: Top productos + Plataformas + Contenido */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "14px", marginBottom: "14px" }}>
+
+        {/* Top productos más vistos */}
         <div className="card-apple">
-          <h3 style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '20px', letterSpacing: '-0.374px' }}>
+          <h3 style={{ fontSize: "15px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.3px", marginBottom: "16px" }}>
             Productos más vistos
           </h3>
           {topProducts.length === 0 ? (
-            <p style={{ fontSize: '14px', color: '#7a7a7a', textAlign: 'center', padding: '24px' }}>
-              No tienes productos suficientes en tu catálogo para generar esta métrica.
-            </p>
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <Package size={28} style={{ color: "#c0c0c0", margin: "0 auto 8px" }} />
+              <p style={{ fontSize: "13px", color: "#8e8e93" }}>Aún no hay productos</p>
+            </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {topProducts.map((p) => (
-                <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#f5f5f7', borderRadius: '8px' }}>
-                    <Package size={18} style={{ color: '#7a7a7a' }} />
-                  </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              {topProducts.map((p, i) => (
+                <div key={p._id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <span style={{
+                    width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: "11px", fontWeight: 700,
+                    background: i === 0 ? "#fef3c7" : i === 1 ? "#f0f0f5" : "#fafafa",
+                    color: i === 0 ? "#d97706" : "#7a7a7a",
+                  }}>
+                    {i + 1}
+                  </span>
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.224px' }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <p style={{ fontSize: "12px", fontWeight: 600, color: "#1d1d1f", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {p.name}
                       </p>
-                      <p style={{ fontSize: '13px', fontWeight: 600, color: '#0066cc', marginLeft: '8px', flexShrink: 0, letterSpacing: '-0.224px' }}>
-                        {p.views} {p.views === 1 ? 'vista' : 'vistas'}
-                      </p>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#0066cc", flexShrink: 0, marginLeft: "6px" }}>
+                        {p.views}
+                      </span>
                     </div>
-                    <div style={{ height: '5px', background: '#f5f5f7', borderRadius: '9999px', overflow: 'hidden' }}>
+                    <div style={{ height: 4, background: "#f0f0f5", borderRadius: 9999 }}>
                       <div style={{
-                        height: '100%', background: 'linear-gradient(90deg, #0066cc, #00c7fc)', borderRadius: '9999px',
+                        height: "100%", borderRadius: 9999,
+                        background: i === 0 ? "linear-gradient(90deg,#0066cc,#2997ff)" : "#0066cc40",
                         width: `${(p.views / maxViews) * 100}%`,
-                        transition: 'width 0.5s ease-out'
                       }} />
                     </div>
                   </div>
@@ -278,65 +264,126 @@ export default function MetricasPage() {
           )}
         </div>
 
-        {/* AI Insights Card */}
+        {/* Distribución de plataformas */}
         <div className="card-apple">
-          <h3 style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '20px', letterSpacing: '-0.374px' }}>
-            Insights de IA
+          <h3 style={{ fontSize: "15px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.3px", marginBottom: "16px" }}>
+            Canales de contacto
           </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {AI_INSIGHTS.map((insight, i) => (
-              <div key={i} style={{ padding: '16px', background: '#f5f7fa', borderRadius: '14px', border: '1px solid #ebebeb' }}>
-                <p style={{ fontSize: '13px', fontWeight: 700, color: '#0058b3', marginBottom: '6px', letterSpacing: '-0.224px' }}>
-                  {insight.title}
-                </p>
-                <p style={{ fontSize: '13px', color: '#1d1d1f', lineHeight: 1.5, letterSpacing: '-0.224px' }}>
-                  {insight.text}
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', fontWeight: 600, color: '#0066cc', marginTop: '8px', cursor: 'pointer' }}>
-                  <TrendingUp size={14} /> {insight.cta}
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="transparent" stroke="#f0f0f5" strokeWidth="12" />
+              {totalChats === 0 ? (
+                <circle cx="50" cy="50" r="40" fill="transparent" stroke="#e0e0e0" strokeWidth="10" strokeDasharray="6 4" />
+              ) : (
+                <>
+                  {(platformDistribution?.whatsapp || 0) > 0 && (
+                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#25D366" strokeWidth="12"
+                      strokeDasharray={`${((platformDistribution.whatsapp / totalChats) * 251.3).toFixed(1)} 251.3`}
+                      transform="rotate(-90 50 50)" />
+                  )}
+                  {(platformDistribution?.telegram || 0) > 0 && (
+                    <circle cx="50" cy="50" r="40" fill="transparent" stroke="#0088cc" strokeWidth="12"
+                      strokeDasharray={`${((platformDistribution.telegram / totalChats) * 251.3).toFixed(1)} 251.3`}
+                      strokeDashoffset={`-${((platformDistribution.whatsapp / totalChats) * 251.3).toFixed(1)}`}
+                      transform="rotate(-90 50 50)" />
+                  )}
+                </>
+              )}
+              <text x="50" y="47" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: "13px", fontWeight: 700, fill: "#1d1d1f", fontFamily: "system-ui" }}>{totalChats}</text>
+              <text x="50" y="59" textAnchor="middle" dominantBaseline="middle" style={{ fontSize: "7px", fill: "#8e8e93", fontFamily: "system-ui" }}>CHATS</text>
+            </svg>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", width: "100%" }}>
+              {[
+                { label: "WhatsApp", count: platformDistribution?.whatsapp || 0, color: "#25D366" },
+                { label: "Telegram", count: platformDistribution?.telegram || 0, color: "#0088cc" },
+              ].map(ch => (
+                <div key={ch.label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                  <div style={{ width: 10, height: 10, borderRadius: 3, background: ch.color, flexShrink: 0 }} />
+                  <span style={{ fontSize: "12px", fontWeight: 600, color: "#1d1d1f", flex: 1 }}>{ch.label}</span>
+                  <span style={{ fontSize: "12px", color: "#8e8e93" }}>
+                    {totalChats > 0 ? `${Math.round((ch.count / totalChats) * 100)}%` : "0%"} ({ch.count})
+                  </span>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
+        {/* Contenido por tipo */}
+        <div className="card-apple">
+          <h3 style={{ fontSize: "15px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.3px", marginBottom: "16px" }}>
+            Contenido generado
+          </h3>
+          {contentByType.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "20px 0" }}>
+              <Sparkles size={28} style={{ color: "#c0c0c0", margin: "0 auto 8px" }} />
+              <p style={{ fontSize: "13px", color: "#8e8e93" }}>Aún no has generado contenido</p>
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+              {contentByType.map((c, i) => {
+                const total = contentByType.reduce((s, x) => s + x.count, 0)
+                const pct   = Math.round((c.count / total) * 100)
+                const COLORS = ["#0066cc", "#7c3aed", "#059669", "#d97706", "#ef4444"]
+                return (
+                  <div key={i}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                      <span style={{ fontSize: "12px", fontWeight: 500, color: "#1d1d1f" }}>
+                        {CONTENT_LABELS[c.type] || c.type}
+                      </span>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: COLORS[i % COLORS.length] }}>
+                        {c.count} ({pct}%)
+                      </span>
+                    </div>
+                    <div style={{ height: 5, background: "#f0f0f5", borderRadius: 9999 }}>
+                      <div style={{ height: "100%", borderRadius: 9999, background: COLORS[i % COLORS.length], width: `${pct}%` }} />
+                    </div>
+                  </div>
+                )
+              })}
+              <p style={{ fontSize: "11px", color: "#8e8e93", textAlign: "right", marginTop: "4px" }}>
+                {totalContentGenerated} piezas en total
+              </p>
+            </div>
+          )}
+        </div>
       </div>
 
-      {/* Real Recent Activity List */}
-      <div className="card-apple" style={{ marginTop: '20px' }}>
-        <h3 style={{ fontWeight: 600, fontSize: '17px', color: '#1d1d1f', marginBottom: '16px', letterSpacing: '-0.374px' }}>
-          Actividad Reciente
+      {/* Actividad reciente */}
+      <div className="card-apple">
+        <h3 style={{ fontSize: "15px", fontWeight: 600, color: "#1d1d1f", letterSpacing: "-0.3px", marginBottom: "14px" }}>
+          Actividad reciente
         </h3>
-        
         {activity.length === 0 ? (
-          <p style={{ fontSize: '14px', color: '#7a7a7a', textAlign: 'center', padding: '24px' }}>
-            Aún no hay actividad registrada para tu negocio.
+          <p style={{ fontSize: "13px", color: "#8e8e93", textAlign: "center", padding: "20px" }}>
+            Aún no hay actividad registrada.
           </p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
             {activity.map((a: any, i: number) => {
-              const IconComp = a.type === "product" ? Package : a.type === "content" ? Sparkles : a.type === "view" ? Eye : MessageCircle
+              const icons: Record<string, any> = { product: Package, content: Sparkles, view: Eye, chat: MessageCircle }
+              const colors: Record<string, string> = { product: "#0066cc", content: "#7c3aed", view: "#059669", chat: "#d97706" }
+              const bgs: Record<string, string>    = { product: "#e8f1fb", content: "#f3eeff",  view: "#d1fae5",  chat: "#fef3c7" }
+              const IconC = icons[a.type] || TrendingUp
+              const col   = colors[a.type] || "#0066cc"
+              const bg    = bgs[a.type]    || "#e8f1fb"
               return (
-                <div key={i} className="row-hover" style={{
-                  display: 'flex', alignItems: 'center', gap: '14px',
-                  padding: '10px 12px', borderRadius: '11px',
-                }}>
-                  <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <IconComp size={16} style={{ color: '#0066cc' }} />
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 10px", borderRadius: "12px" }}
+                  onMouseEnter={e => (e.currentTarget.style.background = "#f9f9f9")}
+                  onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
+                >
+                  <div style={{ width: 32, height: 32, borderRadius: 9, background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <IconC size={15} style={{ color: col }} />
                   </div>
                   <div style={{ flex: 1 }}>
-                    <p style={{ fontSize: '14px', fontWeight: 500, color: '#1d1d1f', letterSpacing: '-0.224px' }}>
-                      {a.label}
-                    </p>
-                    <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>
-                      {formatRelativeTime(a.timeMs)}
-                    </p>
+                    <p style={{ fontSize: "13px", fontWeight: 500, color: "#1d1d1f", letterSpacing: "-0.2px" }}>{a.label}</p>
+                    <p style={{ fontSize: "11px", color: "#8e8e93" }}>{relTime(a.timeMs)}</p>
                   </div>
                   <span style={{
-                    fontSize: '11px', fontWeight: 600, padding: '3px 10px', borderRadius: '9999px',
-                    background: a.positive ? '#d1fae5' : '#e8f1fb',
-                    color: a.positive ? '#065f46' : '#0058b3',
-                    letterSpacing: '0.02em', flexShrink: 0,
+                    fontSize: "11px", fontWeight: 600, padding: "3px 10px", borderRadius: 9999,
+                    background: a.positive ? "#d1fae5" : "#f0f0f5",
+                    color: a.positive ? "#065f46" : "#7a7a7a",
+                    flexShrink: 0,
                   }}>
                     {a.value}
                   </span>
@@ -346,21 +393,6 @@ export default function MetricasPage() {
           </div>
         )}
       </div>
-
     </div>
   )
 }
-
-const AI_INSIGHTS = [
-  {
-    title: "Oportunidad de domicilios",
-    text: "El 68% de tus clientes pregunta por envío a domicilio. Considera agregar esta opción para aumentar ventas.",
-    cta: "Configurar opciones de envío",
-  },
-  {
-    title: "Pico de actividad los viernes",
-    text: "Los viernes entre 6-9 PM tu tienda tiene 3× más visitas. Publica contenido antes de esa hora para maximizar alcance.",
-    cta: "Crear post para el viernes",
-  },
-]
-
