@@ -28,6 +28,7 @@ export const metadata: Metadata = {
 }
 
 import { ConvexClientProvider } from "@/components/ConvexClientProvider"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function RootLayout({
   children,
@@ -43,6 +44,7 @@ export default function RootLayout({
         <ConvexClientProvider>
           {children}
         </ConvexClientProvider>
+        <Toaster position="bottom-right" richColors />
       </body>
     </html>
   )
