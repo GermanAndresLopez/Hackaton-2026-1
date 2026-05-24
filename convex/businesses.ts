@@ -95,6 +95,7 @@ export const saveGrowthRoute = mutation({
       stage: v.string(),
       recommendedEntities: v.array(v.string()),
       customAdvice: v.string(),
+      city: v.optional(v.string()),
       createdAt: v.number(),
       isActive: v.boolean(),
     }),
@@ -116,6 +117,7 @@ export const saveGrowthRoute = mutation({
 export const generateGrowthRouteAction = action({
   args: {
     id: v.id("businesses"),
+    city: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // 1. Obtener la info del negocio
@@ -142,6 +144,7 @@ A partir de la información de este negocio:
 - Enfoque específico: ${business.enfoque}
 - Aspiraciones a futuro: ${business.aspiraciones}
 - Necesidades urgentes: ${business.necesidades}
+- Ciudad de operación: ${args.city || "No especificada"}
 
 Y utilizando estrictamente este contexto nacional colombiano de apoyo (entidades, identidades y rutas de impulso):
 ${JSON.stringify(colombiaContext, null, 2)}
@@ -255,6 +258,7 @@ JSON de respuesta:
         stage: routeData.stage,
         recommendedEntities: routeData.recommendedEntities,
         customAdvice: routeData.customAdvice,
+        city: args.city,
         createdAt: Date.now(),
         isActive: true,
       },

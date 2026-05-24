@@ -33,6 +33,9 @@ export default function DashboardPage() {
   const conversations = useQuery(api.conversations.listByBusiness, businessId ? { businessId } : "skip")
   const pendingPaymentsCount = conversations?.filter((c: any) => !c.isResolved).length || 0
   
+  // Dashboard Metrics
+  const dashboardData = useQuery(api.metrics.getDashboardMetrics, businessId ? { businessId } : "skip")
+  
   const [whatsapp, setWhatsapp] = useState("")
   const [isSavingContact, setIsSavingContact] = useState(false)
 
@@ -50,16 +53,22 @@ export default function DashboardPage() {
   const colombiaContext = useQuery(api.growth.getColombiaContext)
   const analyzeProfile = useAction(api.growth.analyzeProfile)
   const [profileInput, setProfileInput] = useState("")
+  const [cityInput, setCityInput] = useState("")
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [showEditForm, setShowEditForm] = useState(false)
+  const [expandedEntityId, setExpandedEntityId] = useState<string | null>(null)
 
   const handleAnalyze = async () => {
-    if (!profileInput || !businessId) return
+    if (!profileInput || !businessId || !cityInput) {
+      toast.error("Por favor completa tu perfil y selecciona una ciudad.")
+      return
+    }
     setIsAnalyzing(true)
     try {
       await analyzeProfile({
         businessId,
-        profileDescription: profileInput
+        profileDescription: profileInput,
+        city: cityInput
       })
       toast.success("¡Perfil analizado con éxito!")
       setShowEditForm(false)
@@ -79,11 +88,15 @@ export default function DashboardPage() {
   const growthRoute = currentBusiness?.growthRoute
   const needsAnalysis = !growthRoute || showEditForm
 
+  const totalViews = dashboardData?.totalViews || 0
+  const totalMessages = dashboardData?.totalMessages || 0
+  const totalContentGenerated = dashboardData?.totalContentGenerated || 0
+
   const STATS = [
     { label: "Productos activos", value: String(activeProducts), sub: `${totalProducts} en total` },
-    { label: "Visitas a tu tienda", value: "0", sub: "Sin visitas aún" },
-    { label: "Mensajes recibidos", value: "0", sub: "0 hoy" },
-    { label: "Contenido generado", value: "0", sub: "0 esta semana" },
+    { label: "Visitas a tu tienda", value: String(totalViews), sub: totalViews === 0 ? "Sin visitas aún" : "Visualizaciones totales" },
+    { label: "Mensajes recibidos", value: String(totalMessages), sub: "Total en chats" },
+    { label: "Contenido generado", value: String(totalContentGenerated), sub: "Marketing e IA" },
   ]
 
   if (!currentBusiness) {
@@ -297,13 +310,32 @@ export default function DashboardPage() {
               resize: 'none', outline: 'none', background: '#fff',
             }}
           />
+          <select
+            value={cityInput}
+            onChange={(e) => setCityInput(e.target.value)}
+            style={{
+              width: '100%', padding: '12px', borderRadius: '12px',
+              border: '1px solid #c5d9f0', fontSize: '14px', marginBottom: '12px',
+              outline: 'none', background: '#fff', appearance: 'none'
+            }}
+          >
+            <option value="">Selecciona tu ciudad...</option>
+            <option value="Barranquilla">Barranquilla</option>
+            <option value="Cartagena">Cartagena</option>
+            <option value="Valledupar">Valledupar</option>
+            <option value="Santa Marta">Santa Marta</option>
+            <option value="Bogotá">Bogotá</option>
+            <option value="Medellín">Medellín</option>
+            <option value="Cali">Cali</option>
+            <option value="Nacional">Otra (Nacional)</option>
+          </select>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
             {showEditForm && growthRoute && (
               <button onClick={() => setShowEditForm(false)} style={{ background: 'none', border: '1px solid #0066cc', color: '#0066cc', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
             )}
             <button
               onClick={handleAnalyze}
-              disabled={isAnalyzing || !profileInput}
+              disabled={isAnalyzing || !profileInput || !cityInput}
               className="btn-primary"
               style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 20px' }}
             >
@@ -346,17 +378,27 @@ export default function DashboardPage() {
             {growthRoute.recommendedEntities.map((id: string) => {
               const entity = getEntityDetails(id)
               if (!entity) return null
+              const isExpanded = expandedEntityId === id
+              
               return (
-                <div key={id} style={{
+                <div key={id} 
+                  onClick={() => setExpandedEntityId(isExpanded ? null : id)}
+                  style={{
                   background: '#f5f5f7',
-                  border: '1px solid #e0e0e0',
+                  border: isExpanded ? '1px solid #0066cc' : '1px solid #e0e0e0',
                   padding: '18px',
                   borderRadius: '14px',
                   display: 'flex',
                   flexDirection: 'column',
                   gap: '8px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  ...(isExpanded ? { boxShadow: '0 4px 12px rgba(0,102,204,0.1)' } : {})
                 }}>
-                  <p style={{ fontSize: '15px', fontWeight: 600, color: '#0058b3', letterSpacing: '-0.224px' }}>{entity.nombre}</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#0058b3', letterSpacing: '-0.224px' }}>{entity.nombre}</p>
+                    <span style={{ fontSize: '12px', color: '#0066cc' }}>{isExpanded ? 'Ocultar mapa' : 'Ver más'}</span>
+                  </div>
                   <p style={{ fontSize: '12px', color: '#7a7a7a', lineHeight: 1.5 }}>
                     {entity.necesidades_que_resuelve.join(", ")}
                   </p>
@@ -372,6 +414,30 @@ export default function DashboardPage() {
                       </span>
                     ))}
                   </div>
+                  {isExpanded && (
+                    <div style={{ marginTop: '12px', borderTop: '1px solid #e0e0e0', paddingTop: '12px' }}>
+                      {entity.ubicaciones && (entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]) ? (
+                        <>
+                          <p style={{ fontSize: '13px', color: '#1d1d1f', marginBottom: '8px' }}>
+                            <strong style={{ color: '#0058b3' }}>Ubicación en {growthRoute.city || 'Colombia'}:</strong><br/>
+                            {(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).direccion}
+                          </p>
+                          <iframe
+                            width="100%"
+                            height="150"
+                            frameBorder="0"
+                            style={{ border: 0, borderRadius: '8px' }}
+                            src={(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).mapa + "&output=embed"}
+                            allowFullScreen
+                          ></iframe>
+                        </>
+                      ) : (
+                        <p style={{ fontSize: '13px', color: '#7a7a7a' }}>
+                          Ubicación no especificada para {growthRoute.city || 'tu ciudad'}. Acércate a la oficina más cercana.
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )
             })}

@@ -113,3 +113,23 @@ export const toggleBotStatus = mutation({
     return await ctx.db.get(args.id)
   },
 })
+
+// Registrar un clic de WhatsApp para métricas (crea una conv. vacía si no existe o solo la deja para que se cuente en la distribución)
+export const recordWhatsAppClick = mutation({
+  args: {
+    businessId: v.id("businesses"),
+  },
+  handler: async (ctx, args) => {
+    // Generamos un contact ID único para el clic (anónimo) para que sume a "chats/clics de whatsapp"
+    const timestamp = Date.now();
+    await ctx.db.insert("conversations", {
+      businessId: args.businessId,
+      platform: "whatsapp",
+      customerContact: `wa_click_${timestamp}`,
+      customerName: "Clic en WhatsApp",
+      messages: [],
+      isResolved: true,
+      botEnabled: false,
+    });
+  },
+})

@@ -1,20 +1,20 @@
 {
   "pais": "Colombia",
-  "proposito": "Conectar jóvenes emprendedores y pequeños negocios con entidades, apoyos, rutas de formalización y oportunidades de crecimiento.",
+  "proposito": "Conectar jóvenes emprendedores, negocios familiares y pequeños comerciantes con entidades, apoyos, rutas de formalización y oportunidades de crecimiento, con especial énfasis en la región Caribe.",
   "identidades": [
     {
       "id": "I01",
       "nombre": "Joven emprendedor",
-      "descripcion": "Persona joven que está iniciando o consolidando un negocio con necesidad de orientación, visibilidad y acompañamiento.",
+      "descripcion": "Persona joven que está iniciando o consolidando un negocio con necesidad de orientación, visibilidad y acompañamiento para validar su idea.",
       "puntos_fuertes": ["adaptabilidad", "uso de redes sociales", "creatividad", "aprendizaje rápido"],
-      "necesidades": ["formalización", "marketing digital", "ventas", "acceso a oportunidades"],
+      "necesidades": ["formalización", "marketing digital", "ventas", "acceso a oportunidades iniciales"],
       "motores_de_impulso": ["mentoría", "capital semilla", "catálogo digital", "formación práctica"]
     },
     {
       "id": "I02",
       "nombre": "Mujer emprendedora",
       "descripcion": "Mujer que emprende por oportunidad o necesidad, muchas veces con cargas de cuidado y barreras de acceso a crédito.",
-      "puntos_fortes": ["resiliencia", "organización", "ventas por recomendación", "gestión del hogar y negocio"],
+      "puntos_fuertes": ["resiliencia", "organización", "ventas por recomendación", "gestión del hogar y negocio"],
       "necesidades": ["financiamiento", "tiempo", "redes de apoyo", "formalización"],
       "motores_de_impulso": ["crédito flexible", "acompañamiento", "capacitación comercial", "apoyo institucional"]
     },
@@ -22,25 +22,33 @@
       "id": "I03",
       "nombre": "Negocio informal",
       "descripcion": "Actividad económica que opera sin plena formalización, normalmente desde el hogar, la calle o redes sociales.",
-      "puntos_fortes": ["costos bajos", "cercanía al cliente", "respuesta rápida", "flexibilidad"],
+      "puntos_fuertes": ["costos bajos", "cercanía al cliente", "respuesta rápida", "flexibilidad"],
       "necesidades": ["RUT", "marca", "herramientas de venta", "acompañamiento para formalizar"],
       "motores_de_impulso": ["ruta de formalización", "perfil público", "catálogo", "educación financiera"]
     },
     {
       "id": "I04",
-      "nombre": "Micronegocio familiar",
-      "descripcion": "Negocio pequeño sostenido por familia o red cercana, con fuerte base comunitaria y limitada escala.",
-      "puntos_fortes": ["confianza", "trabajo colaborativo", "clientes recurrentes", "bajo costo operativo"],
-      "necesidades": ["orden comercial", "mejoras de imagen", "ventas digitales", "finanzas básicas"],
-      "motores_de_impulso": ["plan comercial", "branding simple", "inventario", "acompañamiento técnico"]
+      "nombre": "Micronegocio familiar en busca de capital",
+      "descripcion": "Negocio pequeño o mediano sostenido por familia, con fuerte base comunitaria. Busca capital para expandirse o mejorar infraestructura.",
+      "puntos_fuertes": ["confianza", "trabajo colaborativo", "clientes recurrentes", "conocimiento del oficio"],
+      "necesidades": ["acceso a crédito", "orden contable", "mejoras de imagen", "tecnología para ventas"],
+      "motores_de_impulso": ["microcréditos", "plan comercial", "inventario", "acompañamiento técnico"]
     },
     {
       "id": "I05",
       "nombre": "Startup o emprendimiento digital",
       "descripcion": "Proyecto con vocación de crecimiento, tecnología o servicios escalables.",
-      "puntos_fortes": ["innovación", "escalabilidad", "automatización", "capacidad de mejora"],
+      "puntos_fuertes": ["innovación", "escalabilidad", "automatización", "capacidad de mejora"],
       "necesidades": ["validación de mercado", "clientes tempranos", "red de aliados", "acceso a inversión"],
       "motores_de_impulso": ["aceleración", "incubación", "networking", "inversión semilla"]
+    },
+    {
+      "id": "I06",
+      "nombre": "Emprendedor turístico o comercial local",
+      "descripcion": "Negocios orientados al turismo, comercio local y gastronomía típica, muy comunes en la región Caribe.",
+      "puntos_fuertes": ["atención al cliente", "riqueza cultural", "ubicación estratégica"],
+      "necesidades": ["visibilidad turística", "inglés básico", "alianzas comerciales", "pagos digitales"],
+      "motores_de_impulso": ["programas de turismo", "digitalización de pagos", "marketing local"]
     }
   ],
   "entidades": [
@@ -52,17 +60,29 @@
       "puntos_fuertes": ["financiación inicial", "acompañamiento", "cobertura nacional"],
       "necesidades_que_resuelve": ["arranque de negocio", "validación de idea", "formalización inicial"],
       "ideal_para": ["joven emprendedor", "startup o emprendimiento digital", "micronegocio en transición"],
-      "modulos_recomendados": ["oportunidades", "financiamiento", "formación"]
+      "modulos_recomendados": ["oportunidades", "financiamiento", "formación"],
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Centro de Comercio y Servicios SENA, Carrera 43 # 42-40", "mapa": "https://maps.google.com/maps?q=SENA+Barranquilla" },
+        "Cartagena": { "direccion": "SENA Ternera, Km 1 Vía Turbaco", "mapa": "https://maps.google.com/maps?q=SENA+Cartagena" },
+        "Valledupar": { "direccion": "SENA Regional Cesar, Carrera 19 # 14-34", "mapa": "https://maps.google.com/maps?q=SENA+Valledupar" },
+        "Santa Marta": { "direccion": "Avenida del Ferrocarril # 27-97", "mapa": "https://maps.google.com/maps?q=SENA+Santa+Marta" }
+      }
     },
     {
       "id": "E02",
-      "nombre": "iNNpulsa Colombia",
-      "tipo": "pública",
-      "foco": ["innovación", "escalamiento", "productividad"],
-      "puntos_fuertes": ["redes", "crecimiento empresarial", "programas de innovación"],
-      "necesidades_que_resuelve": ["escalamiento", "conexión con ecosistema", "validación comercial"],
-      "ideal_para": ["startup o emprendimiento digital", "emprendimiento con potencial de crecimiento"],
-      "modulos_recomendados": ["alianzas", "crecimiento", "innovación"]
+      "nombre": "Cámara de Comercio",
+      "tipo": "mixta",
+      "foco": ["formalización", "redes", "servicios empresariales"],
+      "puntos_fuertes": ["registro", "capacitaciones", "contacto empresarial"],
+      "necesidades_que_resuelve": ["formalización", "visibilidad", "conexión con aliados"],
+      "ideal_para": ["negocio informal", "micronegocio familiar en busca de capital", "emprendedor en crecimiento"],
+      "modulos_recomendados": ["registro", "formalización", "alianzas"],
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Vía 40 # 36-135, Edificio Antigua Aduana", "mapa": "https://maps.google.com/maps?q=Camara+de+Comercio+Barranquilla" },
+        "Cartagena": { "direccion": "Centro, Calle Santa Teresa # 32-41", "mapa": "https://maps.google.com/maps?q=Camara+de+Comercio+Cartagena" },
+        "Valledupar": { "direccion": "Calle 15 # 4-33, Centro", "mapa": "https://maps.google.com/maps?q=Camara+de+Comercio+Valledupar" },
+        "Santa Marta": { "direccion": "Calle 24 # 2-66, Edificio de los Bancos", "mapa": "https://maps.google.com/maps?q=Camara+de+Comercio+Santa+Marta" }
+      }
     },
     {
       "id": "E03",
@@ -71,57 +91,73 @@
       "foco": ["crédito", "crecimiento empresarial", "financiamiento"],
       "puntos_fuertes": ["líneas de crédito", "respaldos financieros", "soluciones empresariales"],
       "necesidades_que_resuelve": ["capital de trabajo", "expansión", "mejora operativa"],
-      "ideal_para": ["micronegocio familiar", "emprendedor en crecimiento"],
-      "modulos_recomendados": ["financiamiento", "educación financiera"]
+      "ideal_para": ["micronegocio familiar en busca de capital", "emprendedor en crecimiento"],
+      "modulos_recomendados": ["financiamiento", "educación financiera"],
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Calle 77B # 57-141", "mapa": "https://maps.google.com/maps?q=Bancoldex+Barranquilla" },
+        "Cartagena": { "direccion": "Bocagrande, Carrera 2 # 8-124", "mapa": "https://maps.google.com/maps?q=Bancoldex+Cartagena" }
+      }
     },
     {
       "id": "E04",
-      "nombre": "Fondo Mujer Libre y Productiva",
-      "tipo": "pública",
-      "foco": ["mujeres", "financiamiento", "productividad"],
-      "puntos_fuertes": ["enfoque de género", "apoyo integral", "acceso a oportunidades"],
-      "necesidades_que_resuelve": ["barreras de crédito", "fortalecimiento de negocio", "acompañamiento"],
-      "ideal_para": ["mujer emprendedora"],
-      "modulos_recomendados": ["financiamiento", "acompañamiento", "rutas de apoyo"]
+      "nombre": "MacondoLab (Universidad Simón Bolívar)",
+      "tipo": "privada",
+      "foco": ["aceleración", "innovación", "tecnología"],
+      "puntos_fuertes": ["ecosistema caribe", "mentoría", "conexión con inversionistas"],
+      "necesidades_que_resuelve": ["aceleración de startups", "validación tecnológica"],
+      "ideal_para": ["startup o emprendimiento digital"],
+      "modulos_recomendados": ["innovación", "aceleración"],
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Carrera 54 # 64-222, Sede 2 USB", "mapa": "https://maps.google.com/maps?q=MacondoLab+Barranquilla" }
+      }
     },
     {
       "id": "E05",
-      "nombre": "Cámara de Comercio",
+      "nombre": "Fondo Nacional de Garantías (FNG)",
       "tipo": "mixta",
-      "foco": ["formalización", "redes", "servicios empresariales"],
-      "puntos_fuertes": ["registro", "capacitaciones", "contacto empresarial"],
-      "necesidades_que_resuelve": ["formalización", "visibilidad", "conexión con aliados"],
-      "ideal_para": ["negocio informal", "micronegocio familiar", "emprendedor en crecimiento"],
-      "modulos_recomendados": ["registro", "formalización", "alianzas"]
+      "foco": ["respaldo financiero", "garantías de crédito"],
+      "puntos_fuertes": ["facilita acceso al crédito", "respaldo ante bancos"],
+      "necesidades_que_resuelve": ["falta de fiadores", "historial crediticio insuficiente"],
+      "ideal_para": ["micronegocio familiar en busca de capital", "mujer emprendedora"],
+      "modulos_recomendados": ["financiamiento", "garantías"],
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Carrera 53 # 75-159", "mapa": "https://maps.google.com/maps?q=Fondo+Nacional+de+Garantias+Barranquilla" },
+        "Cartagena": { "direccion": "Pie del Cerro, Calle 30", "mapa": "https://maps.google.com/maps?q=Fondo+Nacional+de+Garantias+Cartagena" }
+      }
     },
     {
       "id": "E06",
-      "nombre": "ProColombia",
+      "nombre": "Fondo Mujer Libre y Productiva",
       "tipo": "pública",
-      "foco": ["internacionalización", "exportación", "promoción"],
-      "puntos_fuertes": ["mercados internacionales", "acompañamiento exportador", "posicionamiento"],
-      "necesidades_que_resuelve": ["expansión", "exportación", "nuevos mercados"],
-      "ideal_para": ["startup o emprendimiento digital", "emprendimiento escalable"],
-      "modulos_recomendados": ["crecimiento", "mercados", "oportunidades"]
+      "foco": ["mujeres", "financiamiento", "productividad"],
+      "puntos_fuertes": ["enfoque de género", "apoyo integral"],
+      "necesidades_que_resuelve": ["barreras de crédito", "fortalecimiento de negocio"],
+      "ideal_para": ["mujer emprendedora"],
+      "modulos_recomendados": ["financiamiento", "acompañamiento"],
+      "ubicaciones": {
+        "Nacional": { "direccion": "Atención virtual en toda Colombia", "mapa": "https://maps.google.com/maps?q=Bogota" }
+      }
     },
     {
       "id": "E07",
-      "nombre": "MinTIC / programas de transformación digital",
-      "tipo": "pública",
-      "foco": ["digitalización", "tecnología", "competencias digitales"],
-      "puntos_fuertes": ["alfabetización digital", "herramientas tecnológicas", "acceso a programas"],
-      "necesidades_que_resuelve": ["presencia digital", "automatización", "competencias digitales"],
-      "ideal_para": ["negocio informal", "micronegocio familiar", "joven emprendedor"],
-      "modulos_recomendados": ["digitalización", "formación", "IA"]
+      "nombre": "Caribe Exponencial",
+      "tipo": "privada/mixta",
+      "foco": ["crecimiento exponencial", "empresas de alto impacto"],
+      "puntos_fuertes": ["networking élite", "preparación para inversión"],
+      "necesidades_que_resuelve": ["escalamiento en la región", "inversión externa"],
+      "ideal_para": ["startup o emprendimiento digital", "emprendedor turístico o comercial local"],
+      "modulos_recomendados": ["aceleración", "inversión"],
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Centro Empresarial Buenavista", "mapa": "https://maps.google.com/maps?q=Centro+Empresarial+Buenavista+Barranquilla" },
+        "Cartagena": { "direccion": "Manga, Calle 28", "mapa": "https://maps.google.com/maps?q=Manga+Cartagena" }
+      }
     }
   ],
   "puntos_fuertes_nacionales": [
     "Financiación semilla y líneas de crédito para iniciar o crecer.",
     "Cobertura institucional amplia con presencia pública y privada.",
-    "Oferta de formación técnica, comercial y digital.",
-    "Posibilidades de formalización y registro empresarial.",
-    "Programas de innovación y escalamiento para negocios con potencial.",
-    "Enfoque diferenciado para mujeres, jóvenes y microempresas."
+    "Ecosistema fuerte en el Caribe con aceleradoras locales.",
+    "Posibilidades de formalización y registro empresarial ágiles."
   ],
   "rutas_de_impulso": [
     {
@@ -136,13 +172,13 @@
     },
     {
       "etapa": "formalización",
-      "acciones": ["obtener RUT", "organizar finanzas", "definir precios"],
-      "apoyos_sugeridos": ["cámaras de comercio", "Bancóldex", "alcaldías"]
+      "acciones": ["obtener RUT", "organizar finanzas", "buscar garantías de crédito"],
+      "apoyos_sugeridos": ["cámaras de comercio", "Bancóldex", "FNG"]
     },
     {
       "etapa": "crecimiento",
-      "acciones": ["buscar aliados", "mejorar gestión comercial", "invertir en digital"],
-      "apoyos_sugeridos": ["iNNpulsa", "ProColombia", "aceleradoras"]
+      "acciones": ["buscar capital", "mejorar gestión comercial", "aceleración regional"],
+      "apoyos_sugeridos": ["MacondoLab", "Caribe Exponencial", "aceleradoras"]
     }
   ]
 }

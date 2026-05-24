@@ -7,6 +7,7 @@ export const analyzeProfile = action({
   args: {
     businessId: v.id("businesses"),
     profileDescription: v.string(),
+    city: v.string(),
   },
   handler: async (ctx, args) => {
     const nvidiaKey =
@@ -31,9 +32,9 @@ El usuario ha descrito su negocio y su perfil de la siguiente manera:
 """
 ${args.profileDescription}
 """
-También sabemos que su negocio se llama "${business.name}" y su categoría es "${business.category}".
+También sabemos que su negocio se llama "${business.name}", su categoría es "${business.category}" y está ubicado en la ciudad de "${args.city}".
 
-Tu tarea es analizar esta descripción y hacer un "match" con las opciones del contexto proporcionado.
+Tu tarea es analizar esta descripción y hacer un "match" con las opciones del contexto proporcionado. Ten en cuenta la ciudad (${args.city}) para recomendar entidades que tengan sede o foco allí.
 Debes retornar EXCLUSIVAMENTE un objeto JSON con la siguiente estructura y nada más:
 {
   "identityId": "El ID de la identidad que mejor coincide (ej. I01, I02, etc.)",
@@ -84,6 +85,7 @@ No incluyas explicaciones fuera del JSON. Devuelve solo el JSON válido.
         stage: parsed.stage,
         recommendedEntities: parsed.recommendedEntities,
         customAdvice: parsed.customAdvice,
+        city: args.city,
       })
 
       return parsed
@@ -103,6 +105,7 @@ export const saveGrowthRoute = mutation({
     stage: v.string(),
     recommendedEntities: v.array(v.string()),
     customAdvice: v.string(),
+    city: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     return await ctx.db.patch(args.businessId, {
@@ -112,6 +115,7 @@ export const saveGrowthRoute = mutation({
         stage: args.stage,
         recommendedEntities: args.recommendedEntities,
         customAdvice: args.customAdvice,
+        city: args.city,
         createdAt: Date.now(),
         isActive: true,
       },

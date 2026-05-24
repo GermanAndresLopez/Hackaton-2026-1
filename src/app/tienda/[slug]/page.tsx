@@ -18,10 +18,17 @@ export default function TiendaPublicaPage() {
   const [selectedProduct, setSelectedProduct] = useState<any>(null)
 
   const recordView = useMutation(api.products.recordProductView)
+  const recordWhatsAppClick = useMutation(api.conversations.recordWhatsAppClick)
 
   const handleProductClick = (product: any) => {
     setSelectedProduct(product)
     recordView({ productId: product._id })
+  }
+
+  const handleWhatsAppClick = () => {
+    if (business?._id) {
+      recordWhatsAppClick({ businessId: business._id })
+    }
   }
 
 
@@ -178,7 +185,7 @@ export default function TiendaPublicaPage() {
             )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
               {waUrl && (
-                <a href={waUrl} target="_blank" rel="noopener noreferrer" style={{
+                <a href={waUrl} target="_blank" rel="noopener noreferrer" onClick={handleWhatsAppClick} style={{
                   display: 'inline-flex', alignItems: 'center', gap: '8px',
                   background: '#25D366', color: '#fff',
                   fontSize: '14px', fontWeight: 600,
@@ -480,6 +487,7 @@ export default function TiendaPublicaPage() {
             href={buildWhatsAppUrl(business.whatsapp, generateCartMessage())}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={handleWhatsAppClick}
             style={{
               display: 'flex', alignItems: 'center', gap: '6px',
               background: '#25D366', color: '#fff',

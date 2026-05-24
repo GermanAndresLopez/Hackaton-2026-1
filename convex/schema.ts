@@ -59,6 +59,7 @@ export default defineSchema({
         stage: v.string(),
         recommendedEntities: v.array(v.string()),
         customAdvice: v.string(),
+        city: v.optional(v.string()),
         createdAt: v.number(),
         isActive: v.boolean(),
       })
