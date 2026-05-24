@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation"
 import { useState } from "react"
 import { buildWhatsAppUrl, buildTelegramUrl, formatPrice } from "@/lib/utils"
-import { useQuery } from "convex/react"
+import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import {
   Minus, Plus, ShoppingCart, ShoppingBag, Package,
@@ -15,6 +15,15 @@ export default function TiendaPublicaPage() {
   const slug = params.slug as string
   const [categoryFilter, setCategoryFilter] = useState("Todas")
   const [cart, setCart] = useState<Record<string, number>>({})
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
+
+  const recordView = useMutation(api.products.recordProductView)
+
+  const handleProductClick = (product: any) => {
+    setSelectedProduct(product)
+    recordView({ productId: product._id })
+  }
+
 
   const business = useQuery(api.businesses.getBySlug, { slug })
   const products = useQuery(api.products.list, business ? { businessId: business._id } : "skip")
@@ -282,16 +291,20 @@ export default function TiendaPublicaPage() {
                   }}
                 >
                   {/* Image */}
-                  <div style={{
-                    height: '210px',
-                    background: '#f5f5f7',
-                    overflow: 'hidden',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                    position: 'relative',
-                  }}>
+                  <div 
+                    onClick={() => handleProductClick(product)}
+                    style={{
+                      height: '210px',
+                      background: '#f5f5f7',
+                      overflow: 'hidden',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0,
+                      position: 'relative',
+                      cursor: 'pointer',
+                    }}
+                  >
                     {hasImage ? (
                       <img
                         src={product.images![0]}
@@ -318,24 +331,29 @@ export default function TiendaPublicaPage() {
 
                   {/* Content */}
                   <div style={{ padding: '18px 20px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-                    <h3 style={{
-                      fontFamily: '"SF Pro Display", system-ui, sans-serif',
-                      fontSize: '15px', fontWeight: 600, color: '#1d1d1f',
-                      letterSpacing: '-0.224px', marginBottom: '6px', lineHeight: 1.35,
-                    }}>
-                      {product.name}
-                    </h3>
-                    {product.description && (
-                      <p style={{
-                        fontSize: '13px', color: '#7a7a7a', lineHeight: 1.55,
-                        letterSpacing: '-0.12px', marginBottom: '16px',
-                        display: '-webkit-box', WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical', overflow: 'hidden',
-                        flex: 1,
+                    <div 
+                      onClick={() => handleProductClick(product)}
+                      style={{ cursor: 'pointer', flex: 1, display: 'flex', flexDirection: 'column' }}
+                    >
+                      <h3 style={{
+                        fontFamily: '"SF Pro Display", system-ui, sans-serif',
+                        fontSize: '15px', fontWeight: 600, color: '#1d1d1f',
+                        letterSpacing: '-0.224px', marginBottom: '6px', lineHeight: 1.35,
                       }}>
-                        {product.description}
-                      </p>
-                    )}
+                        {product.name}
+                      </h3>
+                      {product.description && (
+                        <p style={{
+                          fontSize: '13px', color: '#7a7a7a', lineHeight: 1.55,
+                          letterSpacing: '-0.12px', marginBottom: '16px',
+                          display: '-webkit-box', WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                          flex: 1,
+                        }}>
+                          {product.description}
+                        </p>
+                      )}
+                    </div>
 
                     {/* Price + counter */}
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 'auto' }}>
@@ -471,6 +489,168 @@ export default function TiendaPublicaPage() {
           >
             Pedir <ArrowRight size={15} />
           </a>
+        </div>
+      )}
+
+      {/* ── Product details modal ── */}
+      {selectedProduct && (
+        <div 
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0,0,0,0.4)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            zIndex: 200,
+            padding: '20px',
+          }} 
+          onClick={() => setSelectedProduct(null)}
+        >
+          <div 
+            style={{
+              background: '#fff',
+              borderRadius: '24px',
+              width: '100%',
+              maxWidth: '500px',
+              maxHeight: '85vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.25)',
+              position: 'relative',
+              display: 'flex',
+              flexDirection: 'column',
+            }} 
+            onClick={(e) => e.stopPropagation()}
+          >
+            
+            {/* Close button */}
+            <button 
+              onClick={() => setSelectedProduct(null)}
+              style={{
+                position: 'absolute', top: '16px', right: '16px',
+                width: '32px', height: '32px', borderRadius: '50%',
+                background: 'rgba(0,0,0,0.05)', border: 'none',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', zIndex: 10, color: '#1d1d1f',
+                fontWeight: 'bold',
+              }}
+            >
+              ✕
+            </button>
+
+            {/* Product Image */}
+            <div style={{
+              height: '240px', background: '#f5f5f7', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', position: 'relative',
+              overflow: 'hidden', flexShrink: 0
+            }}>
+              {selectedProduct.images?.[0]?.startsWith("http") || selectedProduct.images?.[0]?.startsWith("data:") ? (
+                <img 
+                  src={selectedProduct.images[0]} 
+                  alt={selectedProduct.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <Package size={64} style={{ color: '#d0d0d0' }} />
+              )}
+              
+              <span style={{
+                position: 'absolute', top: '16px', left: '16px',
+                fontSize: '11px', fontWeight: 700,
+                background: '#e8f1fb', color: '#0058b3',
+                padding: '4px 12px', borderRadius: '9999px',
+                border: '1px solid rgba(0,102,204,0.15)',
+              }}>
+                {selectedProduct.category}
+              </span>
+            </div>
+
+            {/* Product Details Content */}
+            <div style={{ padding: '24px 28px 28px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <h2 style={{
+                  fontFamily: '"SF Pro Display", system-ui, sans-serif',
+                  fontSize: '22px', fontWeight: 700, color: '#1d1d1f',
+                  letterSpacing: '-0.5px', marginBottom: '6px', lineHeight: 1.25
+                }}>
+                  {selectedProduct.name}
+                </h2>
+                
+                <p style={{
+                  fontFamily: '"SF Pro Display", system-ui, sans-serif',
+                  fontSize: '24px', fontWeight: 700, color: '#0066cc',
+                  letterSpacing: '-0.5px'
+                }}>
+                  {formatPrice(selectedProduct.price)}
+                </p>
+              </div>
+
+              {selectedProduct.description && (
+                <div>
+                  <h4 style={{ fontSize: '12px', fontWeight: 700, color: '#7a7a7a', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
+                    Descripción
+                  </h4>
+                  <p style={{
+                    fontSize: '14px', color: '#424245', lineHeight: 1.55,
+                    letterSpacing: '-0.16px'
+                  }}>
+                    {selectedProduct.description}
+                  </p>
+                </div>
+              )}
+
+              {/* Sync with Cart inside the modal */}
+              <div style={{ 
+                borderTop: '1px solid #e5e5e7', paddingTop: '16px', 
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                marginTop: '8px'
+              }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f' }}>
+                  Cantidad en carrito:
+                </span>
+                
+                <div style={{
+                  display: 'flex', alignItems: 'center',
+                  background: '#f5f5f7', borderRadius: '9999px',
+                  border: (cart[selectedProduct._id] || 0) > 0 ? '1.5px solid #0066cc' : '1.5px solid transparent',
+                  overflow: 'hidden',
+                }}>
+                  <button
+                    onClick={() => updateQuantity(selectedProduct._id, -1)}
+                    disabled={!(cart[selectedProduct._id] || 0)}
+                    style={{
+                      width: '36px', height: '36px', border: 'none',
+                      background: 'transparent', cursor: (cart[selectedProduct._id] || 0) ? 'pointer' : 'default',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: (cart[selectedProduct._id] || 0) ? '#1d1d1f' : '#c0c0c0',
+                    }}
+                  >
+                    <Minus size={14} />
+                  </button>
+                  
+                  <span style={{
+                    minWidth: '28px', textAlign: 'center',
+                    fontSize: '14px', fontWeight: 700,
+                    color: (cart[selectedProduct._id] || 0) > 0 ? '#0066cc' : '#1d1d1f',
+                  }}>
+                    {cart[selectedProduct._id] || 0}
+                  </span>
+                  
+                  <button
+                    onClick={() => updateQuantity(selectedProduct._id, 1)}
+                    style={{
+                      width: '36px', height: '36px', border: 'none',
+                      background: (cart[selectedProduct._id] || 0) > 0 ? '#0066cc' : 'transparent',
+                      cursor: 'pointer',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: (cart[selectedProduct._id] || 0) > 0 ? '#fff' : '#1d1d1f',
+                      borderRadius: '0 9999px 9999px 0',
+                    }}
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -93,3 +93,23 @@ export const deleteProduct = mutation({
     return { success: true }
   },
 })
+
+// Registrar visualización de un producto (+1 a views)
+export const recordProductView = mutation({
+  args: {
+    productId: v.id("products"),
+  },
+  handler: async (ctx, args) => {
+    const product = await ctx.db.get(args.productId)
+    if (!product) {
+      throw new Error("Producto no encontrado")
+    }
+    
+    const currentViews = product.views || 0
+    await ctx.db.patch(args.productId, {
+      views: currentViews + 1,
+    })
+    return { success: true, views: currentViews + 1 }
+  },
+})
+
