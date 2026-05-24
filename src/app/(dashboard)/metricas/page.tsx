@@ -171,71 +171,7 @@ export default function MetricasPage() {
       {/* Visual Analytics / Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5" style={{ marginBottom: '24px' }}>
         
-        {/* Trend Area Chart Card */}
-        <div className="card-apple" style={{ display: 'flex', flexDirection: 'column' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <h3 style={{ fontWeight: 600, fontSize: '16px', color: '#1d1d1f', letterSpacing: '-0.3px' }}>
-              Tendencia de Actividad (Semana)
-            </h3>
-            <div style={{ display: 'flex', gap: '12px', fontSize: '11px', fontWeight: 600 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#0066cc' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0066cc' }} /> Chats
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#bf5af2' }}>
-                <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#bf5af2' }} /> Marketing IA
-              </div>
-            </div>
-          </div>
-
-          <div style={{ position: 'relative', width: '100%', flex: 1, minHeight: '160px', overflowX: 'auto' }}>
-            <svg width="100%" height="160" viewBox="0 0 500 160" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="colorChats" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0066cc" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#0066cc" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorContent" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#bf5af2" stopOpacity={0.2}/>
-                  <stop offset="95%" stopColor="#bf5af2" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-
-              {/* Background Grid Lines */}
-              {Array.from({ length: 4 }).map((_, i) => {
-                const y = paddingY + (i * graphHeight) / 3
-                return (
-                  <line key={i} x1={paddingX} y1={y} x2={svgWidth - paddingX} y2={y} stroke="#f2f2f7" strokeWidth="1" strokeDasharray="4,4" />
-                )
-              })}
-
-              {/* Areas */}
-              {convAreaPath && <path d={convAreaPath} fill="url(#colorChats)" />}
-              {contentAreaPath && <path d={contentAreaPath} fill="url(#colorContent)" />}
-
-              {/* Lines */}
-              {convLinePath && <path d={convLinePath} fill="none" stroke="#0066cc" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />}
-              {contentLinePath && <path d={contentLinePath} fill="none" stroke="#bf5af2" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />}
-
-              {/* Glow Points */}
-              {convPoints.map((p: any, i: number) => (
-                <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#0066cc" strokeWidth="2" />
-              ))}
-              {contentPoints.map((p: any, i: number) => (
-                <circle key={i} cx={p.x} cy={p.y} r="4" fill="#fff" stroke="#bf5af2" strokeWidth="2" />
-              ))}
-
-              {/* X Axis Labels */}
-              {dailyTrend.map((d: any, i: number) => {
-                const x = paddingX + (i * graphWidth) / 6
-                return (
-                  <text key={i} x={x} y={svgHeight - 4} textAnchor="middle" style={{ fontSize: '10px', fill: '#8e8e93', fontWeight: 500, fontFamily: 'system-ui' }}>
-                    {d.dayLabel}
-                  </text>
-                )
-              })}
-            </svg>
-          </div>
-        </div>
+      
 
         {/* Channels Doughnut Chart Card */}
         <div className="card-apple" style={{ display: 'flex', flexDirection: 'column' }}>
