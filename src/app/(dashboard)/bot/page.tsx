@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Bot, X } from "lucide-react"
 
 const INPUT_STYLE = {
   width: '100%', padding: '10px 14px', borderRadius: '11px',
@@ -55,8 +56,8 @@ export default function BotPage() {
         border: `1px solid ${isConnected ? '#6ee7b7' : '#e0e0e0'}`,
         marginBottom: '20px',
       }}>
-        <div style={{ width: '48px', height: '48px', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px', background: isConnected ? '#a7f3d0' : '#e0e0e0', flexShrink: 0 }}>
-          🤖
+        <div style={{ width: '48px', height: '48px', borderRadius: '11px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: isConnected ? '#a7f3d0' : '#e0e0e0', flexShrink: 0 }}>
+          <Bot size={24} style={{ color: isConnected ? '#065f46' : '#7a7a7a' }} />
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f', letterSpacing: '-0.374px' }}>
@@ -157,10 +158,10 @@ export default function BotPage() {
                 <p style={{ fontSize: '13px', color: '#7a7a7a', letterSpacing: '-0.224px' }}>{faq.answer}</p>
                 <button
                   onClick={() => setFaqs(f => f.filter((_, idx) => idx !== i))}
-                  style={{ position: 'absolute', top: '10px', right: '10px', fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', opacity: 0, transition: 'opacity 120ms' }}
+                  style={{ position: 'absolute', top: '10px', right: '10px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', opacity: 0, transition: 'opacity 120ms', display: 'flex', alignItems: 'center', padding: '2px' }}
                   className="group-hover:opacity-100"
                 >
-                  ✕
+                  <X size={13} />
                 </button>
               </div>
             ))}
@@ -206,7 +207,9 @@ export default function BotPage() {
         </h3>
         <div style={{ background: '#1c2733', borderRadius: '11px', padding: '16px', maxWidth: '340px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0066cc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>🤖</div>
+            <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0066cc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Bot size={18} style={{ color: '#fff' }} />
+            </div>
             <div>
               <p style={{ color: '#fff', fontSize: '14px', fontWeight: 600, letterSpacing: '-0.224px' }}>Asistente IA</p>
               <p style={{ color: '#667781', fontSize: '12px', letterSpacing: '-0.12px' }}>Bot activo</p>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
+import { Bot, User, Send } from "lucide-react"
 
 type Message = { role: "user" | "assistant"; content: string; timestamp: Date }
 
@@ -62,8 +63,8 @@ export default function AgentePage() {
       <div className="card-apple" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 200px)', minHeight: '520px' }}>
         {/* Chat header */}
         <div style={{ padding: '16px 24px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0066cc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
-            💡
+          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#0066cc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Bot size={18} style={{ color: '#fff' }} />
           </div>
           <div>
             <p style={{ fontWeight: 600, fontSize: '14px', color: '#1d1d1f', letterSpacing: '-0.224px' }}>Agente de Negocios</p>
@@ -82,9 +83,11 @@ export default function AgentePage() {
                 width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
                 background: msg.role === "assistant" ? '#0066cc' : '#f5f5f7',
                 border: msg.role === "user" ? '1px solid #e0e0e0' : 'none',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                {msg.role === "assistant" ? "💡" : "👤"}
+                {msg.role === "assistant"
+                  ? <Bot size={15} style={{ color: '#fff' }} />
+                  : <User size={14} style={{ color: '#7a7a7a' }} />}
               </div>
               <div style={{ maxWidth: '72%', display: 'flex', flexDirection: 'column', gap: '4px', alignItems: msg.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
@@ -106,8 +109,8 @@ export default function AgentePage() {
 
           {isLoading && (
             <div style={{ display: 'flex', gap: '12px' }}>
-              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#0066cc', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', flexShrink: 0 }}>
-                💡
+              <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#0066cc', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Bot size={15} style={{ color: '#fff' }} />
               </div>
               <div style={{ background: '#f5f5f7', border: '1px solid #e0e0e0', padding: '12px 16px', borderRadius: '4px 18px 18px 18px' }}>
                 <div style={{ display: 'flex', gap: '4px', alignItems: 'center', height: '16px' }}>
@@ -169,9 +172,9 @@ export default function AgentePage() {
               type="submit"
               disabled={!input.trim() || isLoading}
               className="btn-primary"
-              style={{ padding: '12px 20px', fontSize: '16px' }}
+              style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
-              →
+              <Send size={16} />
             </button>
           </form>
         </div>

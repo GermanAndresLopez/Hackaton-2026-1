@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Logo */}
         <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
           <span style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: '20px', color: '#fff', letterSpacing: '-0.28px' }}>
-            VendeMás IA
+            Punto de Arranque
           </span>
         </Link>
 
@@ -59,7 +59,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {/* Mobile logo */}
           <Link href="/" className="lg:hidden" style={{ display: 'flex', alignItems: 'center', marginBottom: '32px', textDecoration: 'none' }}>
             <span style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: '20px', color: '#1d1d1f' }}>
-              VendeMás IA
+              Punto de Arranque
             </span>
           </Link>
 

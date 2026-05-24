@@ -5,255 +5,223 @@ import { usePathname, useRouter } from "next/navigation"
 import { ROUTES } from "@/lib/constants"
 import { useBusinessStore } from "@/store/useBusinessStore"
 import { useEffect } from "react"
+import {
+  LayoutDashboard, Package, Sparkles, ImageIcon,
+  Bot, Send, TrendingUp, type LucideIcon,
+} from "lucide-react"
 
-const NAV_ITEMS = [
-  { href: ROUTES.dashboard,  icon: "⌂",  label: "Dashboard" },
-  { href: ROUTES.productos,  icon: "◫",  label: "Productos" },
-  { href: ROUTES.marketing,  icon: "✦",  label: "Marketing IA" },
-  { href: ROUTES.imagenes,   icon: "▣",  label: "Imágenes IA" },
-  { href: ROUTES.agente,     icon: "◈",  label: "Agente IA" },
-  { href: ROUTES.bot,        icon: "◎",  label: "Bot Telegram" },
-  { href: ROUTES.metricas,   icon: "↗",  label: "Métricas" },
+const NAV_ITEMS: { href: string; icon: LucideIcon; label: string }[] = [
+  { href: ROUTES.dashboard,  icon: LayoutDashboard, label: "Dashboard" },
+  { href: ROUTES.productos,  icon: Package,          label: "Productos" },
+  { href: ROUTES.marketing,  icon: Sparkles,         label: "Marketing IA" },
+  { href: ROUTES.imagenes,   icon: ImageIcon,        label: "Imágenes IA" },
+  { href: ROUTES.agente,     icon: Bot,              label: "Agente IA" },
+  { href: ROUTES.bot,        icon: Send,             label: "Bot Telegram" },
+  { href: ROUTES.metricas,   icon: TrendingUp,       label: "Métricas" },
 ]
+
+/* Navbar height — used for the sticky offset */
+const NAV_H = 56
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const router = useRouter()
-  
-  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
-  const currentUser = useBusinessStore((state) => state.currentUser)
-  const resetStore = useBusinessStore((state) => state.reset)
+  const router   = useRouter()
+
+  const currentBusiness = useBusinessStore((s) => s.currentBusiness)
+  const currentUser     = useBusinessStore((s) => s.currentUser)
+  const resetStore      = useBusinessStore((s) => s.reset)
 
   useEffect(() => {
-    if (!currentBusiness) {
-      router.push(ROUTES.login)
-    }
+    if (!currentBusiness) router.push(ROUTES.login)
   }, [currentBusiness, router])
 
   if (!currentBusiness) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f5f5f7' }}>
-        <span style={{ width: '32px', height: '32px', border: '3px solid rgba(0,102,204,0.2)', borderTopColor: '#0066cc', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
+      <div style={{
+        minHeight: '100vh', display: 'flex',
+        alignItems: 'center', justifyContent: 'center',
+        background: '#f5f5f7',
+      }}>
+        <span style={{
+          width: '32px', height: '32px',
+          border: '3px solid rgba(0,102,204,0.2)',
+          borderTopColor: '#0066cc', borderRadius: '50%',
+          animation: 'spin 0.7s linear infinite', display: 'inline-block',
+        }} />
       </div>
     )
   }
 
   const businessName = currentBusiness.name || "Mi Negocio"
-  const userInitial = (currentUser?.name || businessName).charAt(0).toUpperCase()
+  const userInitial  = (currentUser?.name || businessName).charAt(0).toUpperCase()
 
   return (
     <div style={{
       minHeight: '100vh',
-      display: 'flex',
       background: '#f5f5f7',
       fontFamily: '"SF Pro Text", system-ui, -apple-system, sans-serif',
     }}>
 
-      {/* ── Sidebar — blanco con borde hairline ── */}
-      <aside style={{
-        width: '232px',
+      {/* ── Top navigation bar ── */}
+      <header style={{
+        height: `${NAV_H}px`,
         background: '#ffffff',
-        borderRight: '1px solid #e0e0e0',
+        borderBottom: '1px solid #e0e0e0',
         display: 'flex',
-        flexDirection: 'column',
+        alignItems: 'center',
         position: 'fixed',
-        top: 0, bottom: 0, left: 0,
+        top: 0, left: 0, right: 0,
         zIndex: 40,
+        padding: '0 24px',
+        gap: '0',
       }}>
 
         {/* Logo */}
-        <div style={{
-          height: '56px',
-          display: 'flex',
-          alignItems: 'center',
-          padding: '0 20px',
-          borderBottom: '1px solid #e0e0e0',
-        }}>
-          <span style={{
+        <Link
+          href={ROUTES.dashboard}
+          style={{
             fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif',
-            fontWeight: 600,
-            fontSize: '17px',
+            fontWeight: 700,
+            fontSize: '16px',
             color: '#1d1d1f',
             letterSpacing: '-0.374px',
-          }}>
-            VendeMás IA
-          </span>
-        </div>
+            textDecoration: 'none',
+            flexShrink: 0,
+            marginRight: '28px',
+          }}
+        >
+          Punto de Arranque
+        </Link>
 
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: '12px 10px', overflowY: 'auto' }}>
-          <p style={{
-            fontSize: '11px',
-            fontWeight: 600,
-            color: '#7a7a7a',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            padding: '4px 10px 8px',
-          }}>
-            Menú
-          </p>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '2px' }}>
-            {NAV_ITEMS.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                      padding: '8px 10px',
-                      borderRadius: '8px',
-                      fontSize: '14px',
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? '#ffffff' : '#1d1d1f',
-                      background: isActive ? '#0066cc' : 'transparent',
-                      textDecoration: 'none',
-                      transition: 'background 120ms ease-out, color 120ms ease-out',
-                      letterSpacing: '-0.224px',
-                    }}
-                    onMouseEnter={e => {
-                      if (!isActive) {
-                        (e.currentTarget as HTMLAnchorElement).style.background = '#f0f0f5'
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!isActive) {
-                        (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'
-                      }
-                    }}
-                  >
-                    <span style={{
-                      fontSize: '15px',
-                      color: isActive ? '#fff' : '#7a7a7a',
-                      width: '18px',
-                      textAlign: 'center',
-                      flexShrink: 0,
-                    }}>
-                      {item.icon}
-                    </span>
-                    {item.label}
-                  </Link>
-                </li>
-              )
-            })}
-          </ul>
+        {/* Divider */}
+        <div style={{ width: '1px', height: '22px', background: '#e0e0e0', marginRight: '24px', flexShrink: 0 }} />
 
-          {/* Tienda pública */}
-          <div style={{
-            margin: '16px 0 0',
-            padding: '12px',
-            background: '#e8f1fb',
-            borderRadius: '10px',
-            border: '1px solid #c5d9f0',
-          }}>
-            <p style={{
-              fontSize: '11px',
-              fontWeight: 600,
-              color: '#0058b3',
-              marginBottom: '6px',
-              letterSpacing: '0.05em',
-              textTransform: 'uppercase',
-            }}>
-              Mi Tienda
-            </p>
-            <Link
-              href={`/tienda/${currentBusiness.slug}`}
-              target="_blank"
-              style={{ fontSize: '12px', color: '#0066cc', textDecoration: 'none', letterSpacing: '-0.12px' }}
-            >
-              Ver tienda pública →
-            </Link>
-          </div>
+        {/* Nav items */}
+        <nav style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: isActive ? 600 : 400,
+                  color: isActive ? '#ffffff' : '#1d1d1f',
+                  background: isActive ? '#0066cc' : 'transparent',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap',
+                  transition: 'background 120ms ease-out, color 120ms ease-out',
+                  letterSpacing: '-0.224px',
+                }}
+                onMouseEnter={e => {
+                  if (!isActive) (e.currentTarget as HTMLAnchorElement).style.background = '#f0f0f5'
+                }}
+                onMouseLeave={e => {
+                  if (!isActive) (e.currentTarget as HTMLAnchorElement).style.background = 'transparent'
+                }}
+              >
+                <item.icon
+                  size={15}
+                  style={{ color: isActive ? '#fff' : '#7a7a7a', flexShrink: 0 }}
+                />
+                {item.label}
+              </Link>
+            )
+          })}
         </nav>
 
-        {/* User footer */}
-        <div style={{ borderTop: '1px solid #e0e0e0', padding: '14px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Right side */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+
+          {/* Ver tienda */}
+          <Link
+            href={`/tienda/${currentBusiness.slug}`}
+            target="_blank"
+            style={{
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#0066cc',
+              textDecoration: 'none',
+              padding: '6px 12px',
+              borderRadius: '9999px',
+              background: '#e8f1fb',
+              border: '1px solid #c5d9f0',
+              letterSpacing: '-0.12px',
+              whiteSpace: 'nowrap',
+              transition: 'background 120ms',
+            }}
+            onMouseEnter={e => (e.currentTarget as HTMLAnchorElement).style.background = '#d0e6f8'}
+            onMouseLeave={e => (e.currentTarget as HTMLAnchorElement).style.background = '#e8f1fb'}
+          >
+            Ver tienda →
+          </Link>
+
+          {/* Divider */}
+          <div style={{ width: '1px', height: '22px', background: '#e0e0e0' }} />
+
+          {/* User avatar + name */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{
-              width: '32px', height: '32px', borderRadius: '50%',
+              width: '28px', height: '28px', borderRadius: '50%',
               background: '#0066cc', color: '#fff',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontWeight: 600, fontSize: '13px', flexShrink: 0,
+              fontWeight: 700, fontSize: '12px', flexShrink: 0,
             }}>
               {userInitial}
             </div>
-            <div style={{ minWidth: 0 }}>
-              <p style={{
-                fontSize: '13px', fontWeight: 600, color: '#1d1d1f',
-                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                letterSpacing: '-0.224px',
-              }}>
-                {businessName}
-              </p>
-              <p style={{ fontSize: '11px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>
-                Plan gratuito
-              </p>
-            </div>
+            <span style={{
+              fontSize: '13px', fontWeight: 600, color: '#1d1d1f',
+              letterSpacing: '-0.224px', maxWidth: '140px',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {businessName}
+            </span>
           </div>
-        </div>
-      </aside>
 
-      {/* ── Main content ── */}
-      <main style={{ flex: 1, marginLeft: '232px', minHeight: '100vh' }}>
+          {/* Divider */}
+          <div style={{ width: '1px', height: '22px', background: '#e0e0e0' }} />
 
-        {/* Top bar */}
-        <header style={{
-          height: '52px',
-          background: '#ffffff',
-          borderBottom: '1px solid #e0e0e0',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0 32px',
-          position: 'sticky',
-          top: 0,
-          zIndex: 30,
-        }}>
-          <h1 style={{
-            fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif',
-            fontWeight: 600,
-            fontSize: '17px',
-            color: '#1d1d1f',
-            letterSpacing: '-0.374px',
-          }}>
-            {NAV_ITEMS.find(i => i.href === pathname)?.label ?? 'Dashboard'}
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <button style={{
+          {/* Configuración */}
+          <button
+            style={{
               fontSize: '13px', color: '#7a7a7a',
               background: 'none', border: 'none', cursor: 'pointer',
-              padding: '6px 12px', borderRadius: '8px',
+              padding: '6px 10px', borderRadius: '8px',
               letterSpacing: '-0.224px',
               transition: 'background 120ms',
             }}
             onMouseEnter={e => (e.currentTarget.style.background = '#f5f5f7')}
             onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-            >
-              Configuración
-            </button>
-            <button 
-              onClick={() => {
-                resetStore()
-                router.push(ROUTES.login)
-              }}
-              style={{
-                fontSize: '13px', color: '#ef4444',
-                background: 'none', border: 'none', cursor: 'pointer',
-                padding: '6px 12px', borderRadius: '8px',
-                letterSpacing: '-0.224px',
-                transition: 'background 120ms',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = '#fff0f0')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-            >
-              Salir
-            </button>
-          </div>
-        </header>
+          >
+            Configuración
+          </button>
 
-        {/* Page content */}
+          {/* Salir */}
+          <button
+            onClick={() => { resetStore(); router.push(ROUTES.login) }}
+            style={{
+              fontSize: '13px', color: '#ef4444',
+              background: 'none', border: 'none', cursor: 'pointer',
+              padding: '6px 10px', borderRadius: '8px',
+              letterSpacing: '-0.224px',
+              transition: 'background 120ms',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = '#fff0f0')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+          >
+            Salir
+          </button>
+        </div>
+      </header>
+
+      {/* ── Page content ── */}
+      <main style={{ paddingTop: `${NAV_H}px`, minHeight: '100vh' }}>
         <div style={{ padding: '32px' }} className="fade-in">
           {children}
         </div>

@@ -4,6 +4,7 @@ import { formatPrice } from "@/lib/utils"
 import { useQuery } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import { useBusinessStore } from "@/store/useBusinessStore"
+import { Eye, MessageCircle, Sparkles, Package, type LucideIcon } from "lucide-react"
 
 export default function MetricasPage() {
   const currentBusiness = useBusinessStore((state) => state.currentBusiness)
@@ -73,9 +74,9 @@ export default function MetricasPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               {topProducts.map((p) => (
                 <div key={p._id} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '24px', width: '32px', textAlign: 'center', flexShrink: 0 }}>
-                    {p.images?.[0] || "📦"}
-                  </span>
+                  <div style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, background: '#f0f0f5', borderRadius: '8px' }}>
+                    <Package size={18} style={{ color: '#7a7a7a' }} />
+                  </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
                       <p style={{ fontSize: '13px', fontWeight: 600, color: '#1d1d1f', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '-0.224px' }}>
@@ -130,7 +131,9 @@ export default function MetricasPage() {
               display: 'flex', alignItems: 'center', gap: '14px',
               padding: '10px 12px', borderRadius: '11px',
             }}>
-              <span style={{ fontSize: '20px', flexShrink: 0 }}>{a.icon}</span>
+              <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f0f0f5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <a.icon size={16} style={{ color: '#0066cc' }} />
+              </div>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '14px', fontWeight: 400, color: '#1d1d1f', letterSpacing: '-0.224px' }}>{a.label}</p>
                 <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{a.time}</p>
@@ -164,10 +167,10 @@ const AI_INSIGHTS = [
   },
 ]
 
-const ACTIVITY = [
-  { icon: "👁️", label: "Nueva visita a tu tienda", time: "Hace 5 minutos", value: "+1 visita", positive: true },
-  { icon: "💬", label: "Mensaje de cliente en Telegram", time: "Hace 23 minutos", value: "1 mensaje", positive: false },
-  { icon: "✦", label: "Marketing generado por IA", time: "Hace 2 horas", value: "Post Instagram", positive: false },
-  { icon: "📦", label: "Producto actualizado", time: "Hace 1 día", value: "Brownies", positive: false },
-  { icon: "👁️", label: "Pico de visitas", time: "Ayer a las 7 PM", value: "42 visitas", positive: true },
+const ACTIVITY: { icon: LucideIcon; label: string; time: string; value: string; positive: boolean }[] = [
+  { icon: Eye,           label: "Nueva visita a tu tienda",       time: "Hace 5 minutos",   value: "+1 visita",      positive: true },
+  { icon: MessageCircle, label: "Mensaje de cliente en Telegram", time: "Hace 23 minutos",  value: "1 mensaje",      positive: false },
+  { icon: Sparkles,      label: "Marketing generado por IA",      time: "Hace 2 horas",     value: "Post Instagram", positive: false },
+  { icon: Package,       label: "Producto actualizado",           time: "Hace 1 día",       value: "Brownies",       positive: false },
+  { icon: Eye,           label: "Pico de visitas",                time: "Ayer a las 7 PM",  value: "42 visitas",     positive: true },
 ]

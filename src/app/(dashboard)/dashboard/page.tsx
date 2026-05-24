@@ -8,6 +8,10 @@ import { api } from "../../../../convex/_generated/api"
 import { useBusinessStore } from "@/store/useBusinessStore"
 import { ROUTES } from "@/lib/constants"
 import { toast } from "sonner"
+import {
+  Package, Sparkles, ImageIcon, Bot, ExternalLink,
+  Lightbulb, type LucideIcon,
+} from "lucide-react"
 
 export default function DashboardPage() {
   const currentBusiness = useBusinessStore((state) => state.currentBusiness)
@@ -220,7 +224,9 @@ export default function DashboardPage() {
                 display: 'flex', alignItems: 'center', gap: '12px',
                 padding: '10px 12px', borderRadius: '11px',
               }}>
-                <span style={{ fontSize: '20px' }}>{action.icon}</span>
+                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#f0f0f5', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <action.icon size={16} style={{ color: '#0066cc' }} />
+                </div>
                 <div>
                   <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px' }}>{action.label}</p>
                   <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>{action.description}</p>
@@ -236,7 +242,7 @@ export default function DashboardPage() {
           {/* AI recommendation placeholder */}
           <div style={{ background: '#e8f1fb', borderRadius: '18px', border: '1px solid #c5d9f0', padding: '20px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <div style={{ fontSize: '24px', flexShrink: 0 }}>💡</div>
+              <Lightbulb size={24} style={{ color: '#0066cc', flexShrink: 0 }} />
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 600, color: '#0058b3', marginBottom: '6px', letterSpacing: '-0.224px' }}>
                   Recomendación IA del día
@@ -272,9 +278,9 @@ export default function DashboardPage() {
                     <div style={{
                       width: '44px', height: '44px', borderRadius: '11px',
                       background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '22px', flexShrink: 0,
+                      flexShrink: 0,
                     }}>
-                      {p.images?.[0] || "📦"}
+                      <Package size={22} style={{ color: '#7a7a7a' }} />
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.224px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -304,10 +310,10 @@ export default function DashboardPage() {
   )
 }
 
-const QUICK_ACTIONS = [
-  { icon: "📦", label: "Nuevo producto", description: "Agregar a tu catálogo" },
-  { icon: "✦", label: "Generar post", description: "Para Instagram o Facebook" },
-  { icon: "▣", label: "Mejorar imagen", description: "Convierte foto en publicidad" },
-  { icon: "◈", label: "Pedir consejo", description: "Al agente de negocios IA" },
-  { icon: "↗", label: "Ver mi tienda", description: "Como la ve el cliente" },
+const QUICK_ACTIONS: { icon: LucideIcon; label: string; description: string }[] = [
+  { icon: Package,      label: "Nuevo producto", description: "Agregar a tu catálogo" },
+  { icon: Sparkles,     label: "Generar post",   description: "Para Instagram o Facebook" },
+  { icon: ImageIcon,    label: "Mejorar imagen", description: "Convierte foto en publicidad" },
+  { icon: Bot,          label: "Pedir consejo",  description: "Al agente de negocios IA" },
+  { icon: ExternalLink, label: "Ver mi tienda",  description: "Como la ve el cliente" },
 ]

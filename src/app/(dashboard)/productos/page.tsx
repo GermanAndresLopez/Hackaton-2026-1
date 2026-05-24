@@ -1,10 +1,11 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { formatPrice } from "@/lib/utils"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import { useBusinessStore } from "@/store/useBusinessStore"
+import { Package, Search, X } from "lucide-react"
 
 const INPUT_STYLE = {
   padding: '10px 14px',
@@ -41,6 +42,16 @@ export default function ProductosPage() {
   const [categoryFilter, setCategoryFilter] = useState("Todas")
 
   // Estados para el formulario de nuevo producto
+  // Lock body scroll when modal is open (prevents layout shift / blank space from scrollbar disappearing)
+  useEffect(() => {
+    if (showForm) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [showForm])
+
   const [newName, setNewName] = useState("")
   const [newDesc, setNewDesc] = useState("")
   const [newPrice, setNewPrice] = useState("")
@@ -71,7 +82,7 @@ export default function ProductosPage() {
         name: newName,
         description: newDesc,
         price: Number(newPrice),
-        images: ["📦"], // Icono/emoji por defecto para nuevos productos
+        images: [],
         category: finalCategory,
         isActive: true,
       })
@@ -172,7 +183,7 @@ export default function ProductosPage() {
 
         {filtered.length === 0 && (
           <div style={{ padding: '64px', textAlign: 'center', color: '#7a7a7a' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</div>
+            <Search size={40} style={{ color: '#c0c0c0', marginBottom: '12px', margin: '0 auto 12px' }} />
             <p style={{ fontSize: '17px', color: '#1d1d1f', marginBottom: '4px' }}>Sin resultados</p>
             <p style={{ fontSize: '14px', color: '#7a7a7a' }}>No se encontraron productos para los filtros actuales</p>
           </div>
@@ -189,8 +200,8 @@ export default function ProductosPage() {
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             {/* Thumbnail */}
-            <div style={{ width: '56px', height: '56px', borderRadius: '11px', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '28px', flexShrink: 0, border: '1px solid #e0e0e0' }}>
-              {product.images?.[0] || "📦"}
+            <div style={{ width: '56px', height: '56px', borderRadius: '11px', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #e0e0e0' }}>
+              <Package size={26} style={{ color: '#7a7a7a' }} />
             </div>
 
             {/* Info */}
@@ -252,7 +263,9 @@ export default function ProductosPage() {
               <h3 style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontWeight: 600, fontSize: '21px', color: '#1d1d1f', letterSpacing: '-0.374px' }}>
                 Nuevo producto
               </h3>
-              <button onClick={() => setShowForm(false)} style={{ fontSize: '18px', color: '#7a7a7a', background: 'none', border: 'none', cursor: 'pointer', lineHeight: 1 }}>✕</button>
+              <button onClick={() => setShowForm(false)} style={{ color: '#7a7a7a', background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '4px' }}>
+                <X size={18} />
+              </button>
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>

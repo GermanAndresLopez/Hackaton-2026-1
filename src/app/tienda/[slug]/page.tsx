@@ -52,7 +52,7 @@ export default function TiendaPublicaPage() {
     <div style={{ minHeight: '100vh', background: '#f5f5f7', fontFamily: '"SF Pro Text", system-ui, -apple-system, sans-serif' }}>
       {/* ── Nav ── */}
       <nav style={{ background: '#000', height: '44px', display: 'flex', alignItems: 'center', padding: '0 24px' }}>
-        <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600, letterSpacing: '-0.224px' }}>VendeMás IA</span>
+        <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600, letterSpacing: '-0.224px' }}>Punto de Arranque</span>
       </nav>
 
       {/* ── Business header — canvas white ── */}
@@ -183,7 +183,7 @@ export default function TiendaPublicaPage() {
       <footer style={{ background: '#f5f5f7', borderTop: '1px solid #e0e0e0', padding: '32px 24px', textAlign: 'center' }}>
         <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>
           Tienda creada con{" "}
-          <a href="/" style={{ color: '#0066cc', fontWeight: 600, textDecoration: 'none' }}>VendeMás IA</a>
+          <a href="/" style={{ color: '#0066cc', fontWeight: 600, textDecoration: 'none' }}>Punto de Arranque</a>
           {" "}· {business.name}
         </p>
       </footer>

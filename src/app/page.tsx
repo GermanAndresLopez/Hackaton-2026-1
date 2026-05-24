@@ -8,7 +8,7 @@ export default function LandingPage() {
       {/* ── Global Nav (pure black, 44px) ── */}
       <nav className="global-nav sticky top-0 z-50" style={{ background: '#000', height: '44px' }}>
         <div className="max-w-7xl mx-auto px-6 h-full flex items-center justify-between">
-          <span className="text-white font-semibold text-sm tracking-tight">VendeMás IA</span>
+          <span className="text-white font-semibold text-sm tracking-tight">Punto de Arranque</span>
           <div className="flex items-center gap-6">
             <Link href={ROUTES.login}
               className="text-xs text-white/70 hover:text-white transition-colors"
@@ -141,7 +141,7 @@ export default function LandingPage() {
       <footer className="tile-parchment" style={{ padding: '40px 24px', borderTop: '1px solid #e0e0e0' }}>
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <p style={{ fontSize: '12px', color: '#7a7a7a', letterSpacing: '-0.12px' }}>
-            © 2026 VendeMás IA · Hecho para emprendedores latinoamericanos
+            © 2026 Punto de Arranque · Hecho para emprendedores latinoamericanos
           </p>
           <div style={{ display: 'flex', gap: '24px' }}>
             <Link href={ROUTES.login}    className="link-blue" style={{ fontSize: '12px', letterSpacing: '-0.12px' }}>Iniciar sesión</Link>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Sparkles } from "lucide-react"
 
 type ContentType = "instagram" | "facebook" | "slogan" | "campaign" | "copy"
 type Goal = "lanzamiento" | "promocion" | "urgencia" | "fidelizacion"
@@ -221,7 +222,7 @@ export default function MarketingPage() {
               </div>
             ) : (
               <div style={{ height: '240px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>✦</div>
+                <Sparkles size={48} style={{ color: '#0066cc', marginBottom: '16px' }} />
                 <p style={{ fontWeight: 600, color: '#1d1d1f', fontSize: '17px', marginBottom: '4px', letterSpacing: '-0.374px' }}>Tu contenido aparecerá aquí</p>
                 <p style={{ fontSize: '14px', color: '#7a7a7a', letterSpacing: '-0.224px' }}>Completa el formulario y presiona generar</p>
               </div>

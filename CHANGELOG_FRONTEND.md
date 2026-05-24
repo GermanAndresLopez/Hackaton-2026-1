@@ -120,7 +120,7 @@
   - Badge "Últimas unidades" si stock ≤ 5
   - Precio con color del tema del negocio
   - Botón "Pedir →" que abre WhatsApp con mensaje pre-armado
-  - Footer con crédito a VendeMás IA
+  - Footer con crédito a Punto de Arranque
 
 ### Dependencias instaladas
 - Shadcn/ui componentes (ver lista arriba)

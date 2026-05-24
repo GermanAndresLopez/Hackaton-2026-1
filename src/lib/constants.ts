@@ -1,4 +1,4 @@
-export const APP_NAME = "VendeMás IA"
+export const APP_NAME = "Punto de Arranque"
 export const APP_DESCRIPTION = "Tu asistente comercial inteligente"
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000"
 

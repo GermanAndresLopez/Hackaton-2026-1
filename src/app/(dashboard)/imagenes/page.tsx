@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { Camera, ImageIcon } from "lucide-react"
 
 type ImageStyle = "ubereats" | "instagram" | "banner" | "fondo_blanco"
 
@@ -82,7 +83,7 @@ export default function ImagenesPage() {
                 <img src={preview} alt="Preview" style={{ width: '100%', maxHeight: '180px', objectFit: 'contain', borderRadius: '8px' }} />
               ) : (
                 <>
-                  <div style={{ fontSize: '40px', marginBottom: '12px' }}>📷</div>
+                  <Camera size={40} style={{ color: '#7a7a7a', marginBottom: '12px' }} />
                   <p style={{ fontWeight: 600, fontSize: '14px', color: '#1d1d1f', marginBottom: '4px', letterSpacing: '-0.224px' }}>
                     Arrastra tu foto aquí
                   </p>
@@ -201,7 +202,7 @@ export default function ImagenesPage() {
               </div>
             ) : (
               <div style={{ height: '280px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>▣</div>
+                <ImageIcon size={48} style={{ color: '#0066cc', marginBottom: '16px' }} />
                 <p style={{ fontWeight: 600, color: '#1d1d1f', fontSize: '17px', marginBottom: '4px', letterSpacing: '-0.374px' }}>
                   La imagen mejorada aparecerá aquí
                 </p>
