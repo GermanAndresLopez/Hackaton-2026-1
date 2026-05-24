@@ -89,7 +89,6 @@ export default function MetricasPage() {
   // Prepare KPI objects
   const KPIS = [
     { label: "Visitas a tienda",    value: String(totalViews),          change: "Visualizaciones totales" },
-    { label: "Mensajes clientes",   value: String(totalMessages),       change: "Recibidos vía IA" },
     { label: "Productos activos",   value: String(activeProducts),      change: `${totalProducts} en catálogo` },
     { label: "Contenido generado",  value: String(totalContentGenerated), change: "Marketing e imágenes" },
   ]
