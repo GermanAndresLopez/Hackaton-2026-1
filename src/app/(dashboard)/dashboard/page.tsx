@@ -313,7 +313,5 @@ export default function DashboardPage() {
 const QUICK_ACTIONS: { icon: LucideIcon; label: string; description: string }[] = [
   { icon: Package,      label: "Nuevo producto", description: "Agregar a tu catálogo" },
   { icon: Sparkles,     label: "Generar post",   description: "Para Instagram o Facebook" },
-  { icon: ImageIcon,    label: "Mejorar imagen", description: "Convierte foto en publicidad" },
-  { icon: Bot,          label: "Pedir consejo",  description: "Al agente de negocios IA" },
   { icon: ExternalLink, label: "Ver mi tienda",  description: "Como la ve el cliente" },
 ]
