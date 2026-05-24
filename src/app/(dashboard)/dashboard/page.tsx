@@ -86,7 +86,7 @@ export default function DashboardPage() {
   }
 
   const growthRoute = currentBusiness?.growthRoute
-  const needsAnalysis = !growthRoute || showEditForm
+  const needsAnalysis = showEditForm
 
   const totalViews = dashboardData?.totalViews || 0
   const totalMessages = dashboardData?.totalMessages || 0
@@ -285,24 +285,24 @@ export default function DashboardPage() {
         ))}
       </div>
 
-      {/* ── AI Opportunity Connector (moved here, after stats) ── */}
-      {needsAnalysis ? (
-        <div style={{ background: '#e8f1fb', borderRadius: '18px', border: '1px solid #c5d9f0', padding: '28px', marginBottom: '24px' }}>
+      {/* ── Re-analyze (Level Up) Form ── */}
+      {needsAnalysis && growthRoute ? (
+        <div style={{ background: '#e8f1fb', borderRadius: '18px', border: '1px solid #c5d9f0', padding: '28px', marginBottom: '24px' }} className="fade-in">
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
             <Lightbulb size={24} style={{ color: '#0066cc', flexShrink: 0, marginTop: '2px' }} />
             <div>
               <p style={{ fontSize: '15px', fontWeight: 600, color: '#0058b3', marginBottom: '4px', letterSpacing: '-0.224px' }}>
-                Conector de Oportunidades (Colombia)
+                Subir de Nivel / Re-evaluar Perfil
               </p>
               <p style={{ fontSize: '13px', color: '#1d1d1f', lineHeight: 1.5, letterSpacing: '-0.224px' }}>
-                Cuéntanos sobre ti y tu negocio. La IA analizará tu perfil y te conectará con las entidades de apoyo ideales para tu etapa (SENA, iNNpulsa, Bancóldex, etc.).
+                ¿Qué ha cambiado en tu negocio o en tu situación? Cuéntanos tus nuevos avances para actualizar tu ruta de crecimiento y darte recomendaciones más acordes a tu nuevo nivel.
               </p>
             </div>
           </div>
           <textarea
             value={profileInput}
             onChange={(e) => setProfileInput(e.target.value)}
-            placeholder="Ej: Soy una mujer cabeza de hogar que hace postres desde casa para eventos. Necesito formalizar mi negocio y conseguir un crédito..."
+            placeholder="Ej: Ya registré mi negocio y ahora estoy buscando cómo financiar la compra de nuevos equipos..."
             rows={3}
             style={{
               width: '100%', padding: '12px', borderRadius: '12px',
@@ -340,19 +340,19 @@ export default function DashboardPage() {
               style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 20px' }}
             >
               {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
-              {isAnalyzing ? "Analizando tu perfil..." : "Analizar mi perfil"}
+              {isAnalyzing ? "Analizando tu perfil..." : "Actualizar mi perfil"}
             </button>
           </div>
         </div>
-      ) : (
-        <div className="card-apple" style={{ marginBottom: '24px', padding: '28px' }}>
+      ) : growthRoute ? (
+        <div className="card-apple fade-in" style={{ marginBottom: '24px', padding: '28px' }}>
           {/* Header row */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ background: '#0066cc', color: '#fff', padding: '6px 14px', borderRadius: '9999px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
+              <div style={{ background: growthRoute.stage === 'pre-idea' ? '#1a7a1a' : '#0066cc', color: '#fff', padding: '6px 14px', borderRadius: '9999px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.02em', textTransform: 'uppercase' }}>
                 {growthRoute.identityName}
               </div>
-              <span style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500 }}>Etapa: {growthRoute.stage}</span>
+              <span style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500 }}>Etapa: {growthRoute.stage === 'pre-idea' ? '🌱 Exploración' : growthRoute.stage}</span>
             </div>
             <button
               onClick={() => { setProfileInput(""); setShowEditForm(true); }}
@@ -372,20 +372,21 @@ export default function DashboardPage() {
 
           {/* Entities */}
           <h4 style={{ fontSize: '13px', fontWeight: 700, color: '#7a7a7a', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            Entidades recomendadas para ti
+            {growthRoute.stage === 'pre-idea' ? 'Dónde puedes formarte' : 'Entidades recomendadas para ti'}
           </h4>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {growthRoute.recommendedEntities.map((id: string) => {
               const entity = getEntityDetails(id)
               if (!entity) return null
               const isExpanded = expandedEntityId === id
+              const isEducational = (entity as any).es_formacion === true
               
               return (
                 <div key={id} 
                   onClick={() => setExpandedEntityId(isExpanded ? null : id)}
                   style={{
-                  background: '#f5f5f7',
-                  border: isExpanded ? '1px solid #0066cc' : '1px solid #e0e0e0',
+                  background: isEducational ? '#f0faf0' : '#f5f5f7',
+                  border: isExpanded ? '1px solid #0066cc' : isEducational ? '1px solid #b6e2b6' : '1px solid #e0e0e0',
                   padding: '18px',
                   borderRadius: '14px',
                   display: 'flex',
@@ -396,19 +397,25 @@ export default function DashboardPage() {
                   ...(isExpanded ? { boxShadow: '0 4px 12px rgba(0,102,204,0.1)' } : {})
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p style={{ fontSize: '15px', fontWeight: 600, color: '#0058b3', letterSpacing: '-0.224px' }}>{entity.nombre}</p>
-                    <span style={{ fontSize: '12px', color: '#0066cc' }}>{isExpanded ? 'Ocultar mapa' : 'Ver más'}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {isEducational && (
+                        <span style={{ fontSize: '14px' }}>📚</span>
+                      )}
+                      <p style={{ fontSize: '15px', fontWeight: 600, color: isEducational ? '#1a7a1a' : '#0058b3', letterSpacing: '-0.224px' }}>{entity.nombre}</p>
+                    </div>
+                    <span style={{ fontSize: '12px', color: '#0066cc' }}>{isExpanded ? 'Ocultar' : 'Ver más'}</span>
                   </div>
                   <p style={{ fontSize: '12px', color: '#7a7a7a', lineHeight: 1.5 }}>
                     {entity.necesidades_que_resuelve.join(", ")}
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '2px' }}>
-                    {entity.foco.slice(0, 2).map((foco: string) => (
+                    {entity.foco.slice(0, 3).map((foco: string) => (
                       <span key={foco} style={{
                         fontSize: '11px', fontWeight: 600,
-                        background: '#e8f1fb', color: '#0066cc',
+                        background: isEducational ? '#d4f5d4' : '#e8f1fb',
+                        color: isEducational ? '#1a7a1a' : '#0066cc',
                         padding: '3px 10px', borderRadius: '9999px',
-                        border: '1px solid #c5d9f0',
+                        border: isEducational ? '1px solid #b6e2b6' : '1px solid #c5d9f0',
                       }}>
                         {foco}
                       </span>
@@ -416,20 +423,62 @@ export default function DashboardPage() {
                   </div>
                   {isExpanded && (
                     <div style={{ marginTop: '12px', borderTop: '1px solid #e0e0e0', paddingTop: '12px' }}>
+                      {/* Educational: show areas + link */}
+                      {isEducational && (entity as any).areas_formacion && (
+                        <div style={{ marginBottom: '12px' }}>
+                          <p style={{ fontSize: '12px', fontWeight: 700, color: '#1a7a1a', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            Áreas que puedes aprender
+                          </p>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                            {(entity as any).areas_formacion.map((area: string) => (
+                              <span key={area} style={{
+                                fontSize: '11px', fontWeight: 500,
+                                background: '#fff', color: '#333',
+                                padding: '4px 10px', borderRadius: '9999px',
+                                border: '1px solid #ddd',
+                              }}>
+                                {area}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {isEducational && (entity as any).enlace_web && (
+                        <a
+                          href={(entity as any).enlace_web}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          style={{
+                            display: 'inline-flex', alignItems: 'center', gap: '6px',
+                            background: '#1a7a1a', color: '#fff',
+                            padding: '8px 16px', borderRadius: '9999px',
+                            fontSize: '13px', fontWeight: 600,
+                            textDecoration: 'none', marginBottom: '12px',
+                            transition: 'opacity 150ms',
+                          }}
+                        >
+                          <ExternalLink size={14} /> Ir a la plataforma
+                        </a>
+                      )}
+                      {/* Location / Map */}
                       {entity.ubicaciones && (entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]) ? (
                         <>
                           <p style={{ fontSize: '13px', color: '#1d1d1f', marginBottom: '8px' }}>
                             <strong style={{ color: '#0058b3' }}>Ubicación en {growthRoute.city || 'Colombia'}:</strong><br/>
                             {(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).direccion}
                           </p>
-                          <iframe
-                            width="100%"
-                            height="150"
-                            frameBorder="0"
-                            style={{ border: 0, borderRadius: '8px' }}
-                            src={(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).mapa + "&output=embed"}
-                            allowFullScreen
-                          ></iframe>
+                          {!(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).direccion.includes("online") && 
+                           !(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).direccion.includes("virtual") && (
+                            <iframe
+                              width="100%"
+                              height="150"
+                              frameBorder="0"
+                              style={{ border: 0, borderRadius: '8px' }}
+                              src={(entity.ubicaciones[growthRoute.city] || entity.ubicaciones["Nacional"]).mapa + "&output=embed"}
+                              allowFullScreen
+                            ></iframe>
+                          )}
                         </>
                       ) : (
                         <p style={{ fontSize: '13px', color: '#7a7a7a' }}>
@@ -443,7 +492,7 @@ export default function DashboardPage() {
             })}
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* ── Tienda Pública Section ── */}
       

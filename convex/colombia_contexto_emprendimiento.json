@@ -1,6 +1,6 @@
 {
   "pais": "Colombia",
-  "proposito": "Conectar jóvenes emprendedores, negocios familiares y pequeños comerciantes con entidades, apoyos, rutas de formalización y oportunidades de crecimiento, con especial énfasis en la región Caribe.",
+  "proposito": "Conectar jóvenes emprendedores, negocios familiares, pequeños comerciantes y personas que quieren emprender desde cero con entidades, apoyos, rutas de formación, formalización y oportunidades de crecimiento, con especial énfasis en la región Caribe.",
   "identidades": [
     {
       "id": "I01",
@@ -49,6 +49,15 @@
       "puntos_fuertes": ["atención al cliente", "riqueza cultural", "ubicación estratégica"],
       "necesidades": ["visibilidad turística", "inglés básico", "alianzas comerciales", "pagos digitales"],
       "motores_de_impulso": ["programas de turismo", "digitalización de pagos", "marketing local"]
+    },
+    {
+      "id": "I07",
+      "nombre": "Aspirante desde cero",
+      "descripcion": "Persona que actualmente no trabaja ni estudia, quiere emprender pero no tiene experiencia, formación ni idea clara. Necesita orientación, descubrir su vocación y formarse antes de lanzar cualquier proyecto.",
+      "puntos_fuertes": ["disponibilidad de tiempo", "ganas de salir adelante", "apertura a aprender"],
+      "necesidades": ["descubrir vocación", "formación técnica o práctica", "primer acercamiento al mundo laboral/emprendedor", "motivación y acompañamiento"],
+      "motores_de_impulso": ["cursos gratuitos", "talleres prácticos", "mentoría vocacional", "comunidad de apoyo"],
+      "es_aspirante": true
     }
   ],
   "entidades": [
@@ -151,15 +160,139 @@
         "Barranquilla": { "direccion": "Centro Empresarial Buenavista", "mapa": "https://maps.google.com/maps?q=Centro+Empresarial+Buenavista+Barranquilla" },
         "Cartagena": { "direccion": "Manga, Calle 28", "mapa": "https://maps.google.com/maps?q=Manga+Cartagena" }
       }
+    },
+    {
+      "id": "E08",
+      "nombre": "SENA - Formación Virtual y Presencial",
+      "tipo": "pública",
+      "foco": ["formación técnica gratuita", "cursos cortos", "tecnólogos"],
+      "puntos_fuertes": ["100% gratuito", "certificación oficial", "oferta amplia en todas las áreas"],
+      "necesidades_que_resuelve": ["no saber por dónde empezar", "necesidad de aprender un oficio", "formación desde cero"],
+      "ideal_para": ["aspirante desde cero", "joven emprendedor"],
+      "modulos_recomendados": ["formación"],
+      "es_formacion": true,
+      "areas_formacion": ["repostería y panadería", "cocina", "confección y moda", "tecnología e informática", "administración", "mercadeo", "belleza y cosmetología", "agricultura", "turismo y hotelería", "diseño gráfico"],
+      "enlace_web": "https://oferta.senasofiaplus.edu.co/sofia-oferta/",
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Centro de Comercio y Servicios SENA, Carrera 43 # 42-40", "mapa": "https://maps.google.com/maps?q=SENA+Barranquilla" },
+        "Cartagena": { "direccion": "SENA Ternera, Km 1 Vía Turbaco", "mapa": "https://maps.google.com/maps?q=SENA+Cartagena" },
+        "Valledupar": { "direccion": "SENA Regional Cesar, Carrera 19 # 14-34", "mapa": "https://maps.google.com/maps?q=SENA+Valledupar" },
+        "Santa Marta": { "direccion": "Avenida del Ferrocarril # 27-97", "mapa": "https://maps.google.com/maps?q=SENA+Santa+Marta" },
+        "Nacional": { "direccion": "Plataforma virtual SENA SOFIA Plus", "mapa": "https://maps.google.com/maps?q=SENA+Bogota" }
+      }
+    },
+    {
+      "id": "E09",
+      "nombre": "Platzi",
+      "tipo": "privada",
+      "foco": ["tecnología", "negocios digitales", "habilidades del siglo XXI"],
+      "puntos_fuertes": ["cursos en español", "rutas de aprendizaje claras", "comunidad activa latinoamericana"],
+      "necesidades_que_resuelve": ["aprender programación", "aprender marketing digital", "aprender diseño", "emprender online"],
+      "ideal_para": ["aspirante desde cero", "startup o emprendimiento digital"],
+      "modulos_recomendados": ["formación"],
+      "es_formacion": true,
+      "areas_formacion": ["programación web", "marketing digital", "diseño UX/UI", "inteligencia artificial", "inglés", "emprendimiento", "e-commerce"],
+      "enlace_web": "https://platzi.com/",
+      "ubicaciones": {
+        "Nacional": { "direccion": "Plataforma 100% online", "mapa": "https://maps.google.com/maps?q=Platzi+Bogota" }
+      }
+    },
+    {
+      "id": "E10",
+      "nombre": "Google Skillshop y Grow with Google",
+      "tipo": "privada",
+      "foco": ["habilidades digitales", "marketing", "certificaciones gratis"],
+      "puntos_fuertes": ["totalmente gratis", "certificaciones de Google", "a tu ritmo"],
+      "necesidades_que_resuelve": ["aprender marketing digital desde cero", "certificarse en herramientas digitales", "crear presencia online"],
+      "ideal_para": ["aspirante desde cero", "joven emprendedor", "negocio informal"],
+      "modulos_recomendados": ["formación"],
+      "es_formacion": true,
+      "areas_formacion": ["marketing digital", "Google Ads", "analítica web", "comercio electrónico", "productividad digital"],
+      "enlace_web": "https://grow.google/intl/es-419_ALL/",
+      "ubicaciones": {
+        "Nacional": { "direccion": "Plataforma 100% online y gratuita", "mapa": "https://maps.google.com/maps?q=Google+Colombia" }
+      }
+    },
+    {
+      "id": "E11",
+      "nombre": "Unipacifico / Universidades con programas abiertos",
+      "tipo": "pública",
+      "foco": ["educación superior accesible", "programas comunitarios"],
+      "puntos_fuertes": ["inclusión social", "formación con impacto local", "programas subsidiados"],
+      "necesidades_que_resuelve": ["acceso a educación formal", "primera formación universitaria", "conocimiento técnico"],
+      "ideal_para": ["aspirante desde cero"],
+      "modulos_recomendados": ["formación"],
+      "es_formacion": true,
+      "areas_formacion": ["administración de empresas", "contabilidad", "agroindustria", "turismo"],
+      "enlace_web": "https://www.unipacifico.edu.co/",
+      "ubicaciones": {
+        "Nacional": { "direccion": "Consultar programas por región", "mapa": "https://maps.google.com/maps?q=Universidad+del+Pacifico+Colombia" }
+      }
+    },
+    {
+      "id": "E12",
+      "nombre": "Coursera (cursos gratis con auditoría)",
+      "tipo": "privada",
+      "foco": ["formación universitaria online", "habilidades profesionales"],
+      "puntos_fuertes": ["cursos de universidades top", "modo auditoría gratis", "certificados opcionales"],
+      "necesidades_que_resuelve": ["aprender desde cero en cualquier área", "formarse con estándares internacionales"],
+      "ideal_para": ["aspirante desde cero", "startup o emprendimiento digital"],
+      "modulos_recomendados": ["formación"],
+      "es_formacion": true,
+      "areas_formacion": ["negocios", "tecnología", "datos", "marketing", "finanzas personales", "desarrollo personal"],
+      "enlace_web": "https://www.coursera.org/",
+      "ubicaciones": {
+        "Nacional": { "direccion": "Plataforma 100% online", "mapa": "https://maps.google.com/maps?q=Coursera" }
+      }
+    },
+    {
+      "id": "E13",
+      "nombre": "Apps.co (MinTIC)",
+      "tipo": "pública",
+      "foco": ["emprendimiento digital", "validación de ideas tech", "formación TIC"],
+      "puntos_fuertes": ["programa gubernamental", "gratuito", "mentoría especializada"],
+      "necesidades_que_resuelve": ["quiero crear una app o servicio digital", "necesito validar mi idea tech", "quiero aprender sobre tecnología"],
+      "ideal_para": ["aspirante desde cero", "joven emprendedor", "startup o emprendimiento digital"],
+      "modulos_recomendados": ["formación", "innovación"],
+      "es_formacion": true,
+      "areas_formacion": ["desarrollo de apps", "modelos de negocio digital", "programación básica", "diseño de producto"],
+      "enlace_web": "https://apps.co/",
+      "ubicaciones": {
+        "Barranquilla": { "direccion": "Punto Vive Digital, Centro", "mapa": "https://maps.google.com/maps?q=Punto+Vive+Digital+Barranquilla" },
+        "Nacional": { "direccion": "Plataforma virtual MinTIC", "mapa": "https://maps.google.com/maps?q=MinTIC+Bogota" }
+      }
+    },
+    {
+      "id": "E14",
+      "nombre": "YouTube Creators / Canales educativos",
+      "tipo": "gratuita",
+      "foco": ["autoaprendizaje", "tutoriales prácticos", "comunidad"],
+      "puntos_fuertes": ["gratis", "aprende a tu ritmo", "contenido en español", "resultados rápidos"],
+      "necesidades_que_resuelve": ["no tengo dinero para estudiar", "quiero aprender haciendo", "necesito aprender algo específico rápido"],
+      "ideal_para": ["aspirante desde cero"],
+      "modulos_recomendados": ["formación"],
+      "es_formacion": true,
+      "areas_formacion": ["repostería", "costura", "programación", "diseño", "barbería", "uñas y belleza", "carpintería", "edición de video", "fotografía de producto"],
+      "enlace_web": "https://www.youtube.com/",
+      "ubicaciones": {
+        "Nacional": { "direccion": "Plataforma online y gratuita", "mapa": "https://maps.google.com/maps?q=YouTube" }
+      }
     }
   ],
   "puntos_fuertes_nacionales": [
     "Financiación semilla y líneas de crédito para iniciar o crecer.",
     "Cobertura institucional amplia con presencia pública y privada.",
     "Ecosistema fuerte en el Caribe con aceleradoras locales.",
-    "Posibilidades de formalización y registro empresarial ágiles."
+    "Posibilidades de formalización y registro empresarial ágiles.",
+    "Oferta formativa gratuita amplia para quienes quieran aprender desde cero."
   ],
   "rutas_de_impulso": [
+    {
+      "etapa": "pre-idea",
+      "descripcion": "No tengo idea, no sé por dónde empezar, quiero aprender algo.",
+      "acciones": ["descubrir intereses y vocación", "tomar un curso gratuito en el área que te llama", "explorar comunidades y mentores locales"],
+      "apoyos_sugeridos": ["SENA Formación", "Platzi", "Google Grow", "YouTube educativo", "Apps.co"]
+    },
     {
       "etapa": "idea",
       "acciones": ["validar problema", "definir propuesta de valor", "crear perfil emprendedor"],

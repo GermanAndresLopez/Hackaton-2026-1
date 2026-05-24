@@ -23,7 +23,7 @@ export const analyzeProfile = action({
     if (!business) throw new Error("Negocio no encontrado")
 
     const systemPrompt = `
-Eres un asesor experto en el ecosistema de emprendimiento de Colombia.
+Eres un asesor experto en el ecosistema de emprendimiento y formación de Colombia.
 A continuación te proporcionaré el contexto actual de identidades y entidades de apoyo en Colombia en formato JSON:
 
 ${JSON.stringify(colombiaContext, null, 2)}
@@ -35,12 +35,20 @@ ${args.profileDescription}
 También sabemos que su negocio se llama "${business.name}", su categoría es "${business.category}" y está ubicado en la ciudad de "${args.city}".
 
 Tu tarea es analizar esta descripción y hacer un "match" con las opciones del contexto proporcionado. Ten en cuenta la ciudad (${args.city}) para recomendar entidades que tengan sede o foco allí.
+
+IMPORTANTE: Si detectas que la persona NO tiene negocio, NO trabaja, NO estudia, quiere emprender pero no sabe cómo, o simplemente quiere aprender algo desde cero, entonces:
+- Asígnale la identidad "I07" (Aspirante desde cero)
+- La etapa DEBE ser "pre-idea"
+- Recomienda SOLO entidades de formación (las que tienen "es_formacion": true), como SENA Formación, Platzi, Google Grow, Coursera, Apps.co, YouTube educativo.
+- NO le recomiendes fondos de inversión, créditos ni aceleradoras. Esta persona necesita APRENDER primero.
+- En customAdvice, sé empático: reconócele las ganas, oriéntale sobre qué área podría explorar según lo que describió, y anímale.
+
 Debes retornar EXCLUSIVAMENTE un objeto JSON con la siguiente estructura y nada más:
 {
-  "identityId": "El ID de la identidad que mejor coincide (ej. I01, I02, etc.)",
+  "identityId": "El ID de la identidad que mejor coincide (ej. I01, I02, I07, etc.)",
   "identityName": "El nombre exacto de la identidad seleccionada",
-  "stage": "La etapa en la que crees que se encuentra (ej. idea, inicio, formalización, crecimiento)",
-  "recommendedEntities": ["E01", "E04", "E05"], // Array con los IDs de las entidades que más le convienen según su identidad y necesidades. Recomienda entre 2 y 4 entidades.
+  "stage": "La etapa en la que crees que se encuentra (ej. pre-idea, idea, inicio, formalización, crecimiento)",
+  "recommendedEntities": ["E08", "E09", "E10"], // Array con los IDs de las entidades que más le convienen. Recomienda entre 2 y 4.
   "customAdvice": "Un consejo corto (2-3 oraciones) animando al emprendedor y explicándole por qué le recomiendas estas entidades."
 }
 

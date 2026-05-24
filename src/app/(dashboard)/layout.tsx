@@ -15,6 +15,8 @@ import {
   Send, TrendingUp, Settings, X, Phone, Loader2, Check, MessageCircle,
   type LucideIcon,
 } from "lucide-react"
+import { useQuery } from "convex/react"
+import { OnboardingModal } from "@/components/ui/OnboardingModal"
 
 const NAV_ITEMS: { href: string; icon: LucideIcon; label: string }[] = [
   { href: ROUTES.dashboard,  icon: LayoutDashboard, label: "Dashboard" },
@@ -48,8 +50,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [telegram, setTelegram]     = useState("")
   const [isSaving, setIsSaving]     = useState(false)
   const [saved, setSaved]           = useState(false)
+  const [onboardingDone, setOnboardingDone] = useState(false)
 
   const updateBusiness = useMutation(api.businesses.updateBusiness)
+  const reactiveBusiness = useQuery(api.businesses.getById, currentBusiness?._id ? { id: currentBusiness._id as any } : "skip")
+  const activeBusiness = reactiveBusiness || currentBusiness
 
   useEffect(() => { setMounted(true) }, [])
 
@@ -71,6 +76,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     )
   }
+
+  const needsOnboarding = activeBusiness && !(activeBusiness as any).growthRoute && !onboardingDone
 
   const businessName = currentBusiness.name || "Mi Negocio"
   const userInitial  = (currentUser?.name || businessName).charAt(0).toUpperCase()
@@ -201,7 +208,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* ── Page content ── */}
       <main style={{ paddingTop: `${NAV_H}px`, minHeight: '100vh' }}>
         <div style={{ padding: '32px' }} className="fade-in">
-          {children}
+          {needsOnboarding ? (
+            <OnboardingModal 
+              businessId={activeBusiness._id} 
+              onComplete={() => {
+                setOnboardingDone(true)
+                if (reactiveBusiness) setBusiness(reactiveBusiness as any)
+              }} 
+            />
+          ) : (
+            children
+          )}
         </div>
       </main>
 
