@@ -8,9 +8,10 @@ import { api } from "../../../../convex/_generated/api"
 import { useBusinessStore } from "@/store/useBusinessStore"
 import { ROUTES } from "@/lib/constants"
 import { toast } from "sonner"
+import { useAction } from "convex/react"
 import {
   Package, Sparkles, ImageIcon, Bot, ExternalLink,
-  Lightbulb, type LucideIcon,
+  Lightbulb, Loader2, ArrowRight, type LucideIcon,
 } from "lucide-react"
 
 export default function DashboardPage() {
@@ -34,6 +35,39 @@ export default function DashboardPage() {
   const totalProducts = products.length
   const activeProducts = products.filter(p => p.isActive).length
   const recentProducts = products.slice(0, 3)
+
+  // Oportunidades state
+  const colombiaContext = useQuery(api.growth.getColombiaContext)
+  const analyzeProfile = useAction(api.growth.analyzeProfile)
+  const [profileInput, setProfileInput] = useState("")
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [showEditForm, setShowEditForm] = useState(false)
+
+  const handleAnalyze = async () => {
+    if (!profileInput || !businessId) return
+    setIsAnalyzing(true)
+    try {
+      await analyzeProfile({
+        businessId,
+        profileDescription: profileInput
+      })
+      toast.success("¡Perfil analizado con éxito!")
+      setShowEditForm(false)
+    } catch (error) {
+      console.error(error)
+      toast.error("Hubo un error al analizar el perfil.")
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
+
+  // Helper to find full entity details from ID
+  const getEntityDetails = (entityId: string) => {
+    return colombiaContext?.entidades?.find((e: any) => e.id === entityId)
+  }
+
+  const growthRoute = currentBusiness?.growthRoute
+  const needsAnalysis = !growthRoute || showEditForm
 
   const STATS = [
     { label: "Productos activos", value: String(activeProducts), sub: `${totalProducts} en total` },
@@ -239,20 +273,84 @@ export default function DashboardPage() {
         {/* AI Tip + Recent products */}
         <div className="lg:col-span-2" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-          {/* AI recommendation placeholder */}
-          <div style={{ background: '#e8f1fb', borderRadius: '18px', border: '1px solid #c5d9f0', padding: '20px 24px' }}>
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-              <Lightbulb size={24} style={{ color: '#0066cc', flexShrink: 0 }} />
-              <div>
-                <p style={{ fontSize: '14px', fontWeight: 600, color: '#0058b3', marginBottom: '6px', letterSpacing: '-0.224px' }}>
-                  Recomendación IA del día
-                </p>
-                <p style={{ fontSize: '14px', color: '#1d1d1f', lineHeight: 1.5, letterSpacing: '-0.224px' }}>
-                  Para recibir recomendaciones personalizadas basadas en el contexto de tu negocio en Colombia, completa tu perfil y cuéntanos sobre tus necesidades en la sección del Agente IA.
-                </p>
+          {/* AI Opportunity Connector */}
+          {needsAnalysis ? (
+            <div style={{ background: '#e8f1fb', borderRadius: '18px', border: '1px solid #c5d9f0', padding: '24px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', marginBottom: '16px' }}>
+                <Lightbulb size={24} style={{ color: '#0066cc', flexShrink: 0 }} />
+                <div>
+                  <p style={{ fontSize: '15px', fontWeight: 600, color: '#0058b3', marginBottom: '4px', letterSpacing: '-0.224px' }}>
+                    Conector de Oportunidades (Colombia)
+                  </p>
+                  <p style={{ fontSize: '13px', color: '#1d1d1f', lineHeight: 1.5, letterSpacing: '-0.224px' }}>
+                    Cuéntanos sobre ti y tu negocio. La IA analizará tu perfil y te conectará con las identidades y entidades de apoyo ideales para tu etapa (SENA, iNNpulsa, Bancóldex, etc.).
+                  </p>
+                </div>
+              </div>
+              <textarea
+                value={profileInput}
+                onChange={(e) => setProfileInput(e.target.value)}
+                placeholder="Ej: Soy una mujer cabeza de hogar que hace postres desde casa para eventos. Necesito formalizar mi negocio y conseguir un crédito..."
+                rows={3}
+                style={{
+                  width: '100%', padding: '12px', borderRadius: '12px',
+                  border: '1px solid #c5d9f0', fontSize: '14px', marginBottom: '12px',
+                  resize: 'none', outline: 'none'
+                }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                {showEditForm && growthRoute && (
+                  <button onClick={() => setShowEditForm(false)} style={{ background: 'none', border: '1px solid #0066cc', color: '#0066cc', padding: '10px 16px', borderRadius: '8px', fontSize: '13px', fontWeight: 600 }}>Cancelar</button>
+                )}
+                <button
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing || !profileInput}
+                  className="btn-primary"
+                  style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', padding: '10px 20px' }}
+                >
+                  {isAnalyzing ? <Loader2 size={16} className="animate-spin" /> : <Sparkles size={16} />}
+                  {isAnalyzing ? "Analizando tu perfil..." : "Analizar mi perfil"}
+                </button>
               </div>
             </div>
-          </div>
+          ) : (
+            <div style={{ background: '#f5f5f7', borderRadius: '18px', border: '1px solid #e0e0e0', padding: '24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ background: '#0066cc', color: '#fff', padding: '6px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+                    {growthRoute.identityName}
+                  </div>
+                  <span style={{ fontSize: '13px', color: '#7a7a7a', fontWeight: 500 }}>Etapa: {growthRoute.stage}</span>
+                </div>
+                <button onClick={() => { setProfileInput(""); setShowEditForm(true); }} style={{ color: '#0066cc', background: 'none', border: 'none', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+                  Re-analizar Perfil
+                </button>
+              </div>
+              
+              <p style={{ fontSize: '14px', color: '#1d1d1f', lineHeight: 1.6, marginBottom: '20px', background: '#fff', padding: '16px', borderRadius: '12px', border: '1px solid #e0e0e0' }}>
+                <span style={{ fontSize: '16px' }}>💡</span> {growthRoute.customAdvice}
+              </p>
+
+              <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#1d1d1f', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Entidades Recomendadas para ti</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {growthRoute.recommendedEntities.map((id: string) => {
+                  const entity = getEntityDetails(id);
+                  if (!entity) return null;
+                  return (
+                    <div key={id} style={{ background: '#fff', border: '1px solid #e0e0e0', padding: '16px', borderRadius: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <p style={{ fontSize: '15px', fontWeight: 600, color: '#0058b3' }}>{entity.nombre}</p>
+                      <p style={{ fontSize: '13px', color: '#7a7a7a', lineHeight: 1.4 }}>Resuelve: {entity.necesidades_que_resuelve.join(", ")}</p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                        {entity.foco.slice(0,2).map((foco: string) => (
+                          <span key={foco} style={{ fontSize: '11px', background: '#e8f1fb', color: '#0066cc', padding: '2px 8px', borderRadius: '4px', fontWeight: 500 }}>{foco}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Recent products */}
           <div className="card-apple">
