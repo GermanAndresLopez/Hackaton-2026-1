@@ -161,7 +161,7 @@ const STATS = [
 
 const FEATURES = [
   { icon: "🏪", title: "Tienda Pública", description: "Comparte tu negocio con un link. Tus clientes ven productos y te contactan al instante." },
-  { icon: "🤖", title: "Marketing IA", description: "Genera posts, slogans y campañas profesionales para redes sociales en segundos." },
+  { icon: "🤖", title: "Marketing", description: "Genera posts, slogans y campañas profesionales para redes sociales en segundos." },
   { icon: "🖼️", title: "Imágenes Pro", description: "Convierte fotos caseras en publicidad al nivel de grandes marcas con nuestra IA." },
   { icon: "💬", title: "Bot de Atención", description: "Responde a tus clientes 24/7 en Telegram con un asistente entrenado en tu negocio." },
   { icon: "📦", title: "Gestión de Productos", description: "Sube tus productos y la IA genera nombres atractivos, descripciones y hashtags." },

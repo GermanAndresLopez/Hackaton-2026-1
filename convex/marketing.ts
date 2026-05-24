@@ -270,6 +270,7 @@ export const generateRoadmap = action({
   args: {
     productId: v.id("products"),
     goal: v.string(),
+    dias: v.optional(v.number()),
   },
   handler: async (ctx, args): Promise<any> => {
     const nvidiaKey =
@@ -284,6 +285,7 @@ export const generateRoadmap = action({
     const product = await ctx.runQuery(api.products.getById, { id: args.productId })
     if (!product) throw new Error("Producto no encontrado")
 
+    const numDias = args.dias ?? 7
     const productDesc = `Nombre: ${product.name}\nDescripción: ${product.description}\nPrecio: ${product.price}\nCategoría: ${product.category}`
 
     const prompt = `
@@ -294,7 +296,7 @@ ${productDesc}
 
 El objetivo de marketing es: ${args.goal}
 
-Crea un ROADMAP detallado de contenido para redes sociales de 7 días. 
+Crea un ROADMAP detallado de contenido para redes sociales de ${numDias} días.
 
 Para CADA día debes incluir:
 - Qué tipo de contenido publicar (foto, carrusel, reel, historia, etc.)
@@ -319,11 +321,15 @@ Retorna EXCLUSIVAMENTE un objeto JSON válido con esta estructura:
   "consejosGenerales": "3-4 consejos generales para toda la campaña..."
 }
 
+El array "dias" debe tener exactamente ${numDias} elementos, numerados del 1 al ${numDias}.
 Responde SOLO con el JSON, sin explicaciones ni markdown.
 `
 
+    // More tokens needed for longer roadmaps
+    const maxTokens = numDias <= 7 ? 3000 : numDias <= 15 ? 6000 : 10000
+
     try {
-      console.log("[Marketing] Generando roadmap con NVIDIA NIM...")
+      console.log(`[Marketing] Generando roadmap de ${numDias} días con NVIDIA NIM...`)
       const response = await fetch(
         "https://integrate.api.nvidia.com/v1/chat/completions",
         {
@@ -336,7 +342,7 @@ Responde SOLO con el JSON, sin explicaciones ni markdown.
             model: "meta/llama-3.3-70b-instruct",
             messages: [{ role: "user", content: prompt }],
             temperature: 0.7,
-            max_tokens: 3000,
+            max_tokens: maxTokens,
           }),
         }
       )

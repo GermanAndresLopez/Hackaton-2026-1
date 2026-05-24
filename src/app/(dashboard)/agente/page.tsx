@@ -11,7 +11,7 @@ const QUICK_PROMPTS = [
   "¿Qué precio debo poner a mis brownies?",
   "Crea un nombre para mi negocio de ropa",
   "¿Cómo hago publicidad sin gastar mucho?",
-  "Estrategia para Instagram",
+  "Estrategia para Facebook / Instagram",
 ]
 
 const WELCOME_MESSAGE: Message = {

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { ROUTES } from "@/lib/constants"
 import { useBusinessStore } from "@/store/useBusinessStore"
@@ -13,7 +14,7 @@ import {
 const NAV_ITEMS: { href: string; icon: LucideIcon; label: string }[] = [
   { href: ROUTES.dashboard,  icon: LayoutDashboard, label: "Dashboard" },
   { href: ROUTES.productos,  icon: Package,          label: "Productos" },
-  { href: ROUTES.marketing,  icon: Sparkles,         label: "Marketing IA" },
+  { href: ROUTES.marketing,  icon: Sparkles,         label: "Marketing " },
   { href: ROUTES.bot,        icon: Send,             label: "Bot Telegram" },
   { href: ROUTES.metricas,   icon: TrendingUp,       label: "Métricas" },
 ]
@@ -86,17 +87,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <Link
           href={ROUTES.dashboard}
           style={{
-            fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif',
-            fontWeight: 700,
-            fontSize: '16px',
-            color: '#1d1d1f',
-            letterSpacing: '-0.374px',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
             textDecoration: 'none',
             flexShrink: 0,
             marginRight: '28px',
           }}
         >
-          Punto de Arranque
+          <Image
+            src="/logo-bg.png"
+            alt="Punto de Arranque"
+            width={36}
+            height={36}
+            style={{ objectFit: 'contain', borderRadius: '6px' }}
+            priority
+          />
+          <span style={{
+            fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif',
+            fontWeight: 700,
+            fontSize: '15px',
+            color: '#1d1d1f',
+            letterSpacing: '-0.374px',
+            whiteSpace: 'nowrap',
+          }}>
+            Punto de Arranque
+          </span>
         </Link>
 
         {/* Divider */}

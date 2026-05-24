@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { formatPrice } from "@/lib/utils"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
@@ -41,6 +42,13 @@ export default function ProductosPage() {
   const [showForm, setShowForm] = useState(false)
   const [search, setSearch] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("Todas")
+
+  // Confirmation modal state
+  const [confirmModal, setConfirmModal] = useState<{
+    productId: any
+    action: "deactivate" | "delete"
+    productName: string
+  } | null>(null)
 
   // Estados para el formulario de nuevo producto
   // Lock body scroll when modal is open (prevents layout shift / blank space from scrollbar disappearing)
@@ -130,13 +138,21 @@ export default function ProductosPage() {
   }
 
   async function handleDeleteProduct(productId: any) {
-    if (confirm("¿Estás seguro de que deseas eliminar este producto de tu catálogo?")) {
-      try {
-        await deleteProductMutation({ id: productId })
-      } catch (err) {
-        console.error("Error al eliminar producto:", err)
-      }
+    try {
+      await deleteProductMutation({ id: productId })
+    } catch (err) {
+      console.error("Error al eliminar producto:", err)
     }
+  }
+
+  async function handleConfirm() {
+    if (!confirmModal) return
+    if (confirmModal.action === "deactivate") {
+      await handleToggleActive(confirmModal.productId)
+    } else {
+      await handleDeleteProduct(confirmModal.productId)
+    }
+    setConfirmModal(null)
   }
 
   return (
@@ -253,14 +269,17 @@ export default function ProductosPage() {
                 {/* Actions */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px', flexShrink: 0 }}>
                   <button
-                    onClick={() => handleToggleActive(product._id)}
+                    onClick={() => product.isActive
+                      ? setConfirmModal({ productId: product._id, action: "deactivate", productName: product.name })
+                      : handleToggleActive(product._id)
+                    }
                     className="btn-secondary"
                     style={{ fontSize: '12px', padding: '6px 14px' }}
                   >
                     {product.isActive ? "Desactivar" : "Activar"}
                   </button>
                   <button
-                    onClick={() => handleDeleteProduct(product._id)}
+                    onClick={() => setConfirmModal({ productId: product._id, action: "delete", productName: product.name })}
                     style={{ fontSize: '12px', color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '-0.12px', padding: '4px 8px' }}
                   >
                     Eliminar
@@ -272,10 +291,82 @@ export default function ProductosPage() {
         ))}
       </div>
 
-      {/* Modal */}
-      {showForm && (
+      {/* Confirmation modal */}
+      {confirmModal && createPortal(
         <div
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.48)', backdropFilter: 'blur(8px)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.48)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
+          onClick={() => setConfirmModal(null)}
+        >
+          <div
+            className="fade-in"
+            style={{ background: '#fff', width: '100%', maxWidth: '400px', borderRadius: '18px', padding: '32px', boxShadow: 'rgba(0,0,0,0.22) 3px 5px 30px' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Icon */}
+            <div style={{
+              width: '48px', height: '48px', borderRadius: '12px', marginBottom: '20px',
+              background: confirmModal.action === 'delete' ? '#fef2f2' : '#fff8e1',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              {confirmModal.action === 'delete'
+                ? <X size={24} style={{ color: '#ef4444' }} />
+                : <Package size={24} style={{ color: '#f59e0b' }} />
+              }
+            </div>
+
+            {/* Title */}
+            <h3 style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontSize: '19px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.374px', marginBottom: '8px' }}>
+              {confirmModal.action === 'delete' ? '¿Eliminar producto?' : '¿Desactivar producto?'}
+            </h3>
+
+            {/* Product name */}
+            <p style={{ fontSize: '13px', fontWeight: 600, color: '#0066cc', marginBottom: '12px', letterSpacing: '-0.224px' }}>
+              "{confirmModal.productName}"
+            </p>
+
+            {/* Message */}
+            <p style={{ fontSize: '14px', color: '#4a4a4a', lineHeight: 1.6, letterSpacing: '-0.224px', marginBottom: '28px' }}>
+              {confirmModal.action === 'delete'
+                ? 'Esta acción no se puede deshacer. El producto será eliminado permanentemente de tu catálogo y dejará de estar disponible para tus clientes.'
+                : 'El producto quedará marcado como sin stock y no aparecerá como disponible para tus clientes. Puedes volver a activarlo cuando quieras.'
+              }
+            </p>
+
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setConfirmModal(null)}
+                className="btn-secondary"
+                style={{ flex: 1, justifyContent: 'center', padding: '12px' }}
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleConfirm}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '9999px', border: 'none',
+                  cursor: 'pointer', fontSize: '14px', fontWeight: 600,
+                  background: confirmModal.action === 'delete' ? '#ef4444' : '#f59e0b',
+                  color: '#fff',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px',
+                  transition: 'opacity 120ms',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+              >
+                {confirmModal.action === 'delete' ? 'Sí, eliminar' : 'Sí, desactivar'}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal — rendered in document.body via portal to escape the
+           fade-in transform stacking context that would break position:fixed */}
+      {showForm && createPortal(
+        <div
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.48)', backdropFilter: 'blur(8px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}
           onClick={() => setShowForm(false)}
         >
           <div
@@ -392,7 +483,8 @@ export default function ProductosPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   )
