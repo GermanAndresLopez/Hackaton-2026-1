@@ -36,6 +36,8 @@ export default defineSchema({
     ),
     telegram: v.optional(v.string()),
     whatsapp: v.optional(v.string()),
+    botToken: v.optional(v.string()),
+    botContext: v.optional(v.string()),
     tone: v.string(),
     slug: v.string(),
     isPublic: v.boolean(),
@@ -92,6 +94,7 @@ export default defineSchema({
     businessId: v.id("businesses"),
     type: v.union(
       v.literal("marketing_post"),
+      v.literal("marketing_roadmap"),
       v.literal("product_description"),
       v.literal("slogan"),
       v.literal("banner"),

@@ -38,6 +38,8 @@ export const updateBusiness = mutation({
       telegram: v.optional(v.string()),
       description: v.optional(v.string()),
       name: v.optional(v.string()),
+      botToken: v.optional(v.string()),
+      botContext: v.optional(v.string()),
     }),
   },
   handler: async (ctx, args) => {

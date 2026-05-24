@@ -14,8 +14,6 @@ const NAV_ITEMS: { href: string; icon: LucideIcon; label: string }[] = [
   { href: ROUTES.dashboard,  icon: LayoutDashboard, label: "Dashboard" },
   { href: ROUTES.productos,  icon: Package,          label: "Productos" },
   { href: ROUTES.marketing,  icon: Sparkles,         label: "Marketing IA" },
-  { href: ROUTES.imagenes,   icon: ImageIcon,        label: "Imágenes IA" },
-  { href: ROUTES.agente,     icon: Bot,              label: "Agente IA" },
   { href: ROUTES.bot,        icon: Send,             label: "Bot Telegram" },
   { href: ROUTES.metricas,   icon: TrendingUp,       label: "Métricas" },
 ]

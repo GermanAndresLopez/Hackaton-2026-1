@@ -9,7 +9,10 @@
  */
 
 import type * as businesses from "../businesses.js";
+import type * as http from "../http.js";
+import type * as marketing from "../marketing.js";
 import type * as products from "../products.js";
+import type * as telegram from "../telegram.js";
 import type * as users from "../users.js";
 
 import type {
@@ -20,7 +23,10 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   businesses: typeof businesses;
+  http: typeof http;
+  marketing: typeof marketing;
   products: typeof products;
+  telegram: typeof telegram;
   users: typeof users;
 }>;
 
