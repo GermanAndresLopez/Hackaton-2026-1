@@ -15,6 +15,14 @@ export const list = query({
   },
 })
 
+// Obtener un producto por ID
+export const getById = query({
+  args: { id: v.id("products") },
+  handler: async (ctx, args) => {
+    return await ctx.db.get(args.id)
+  },
+})
+
 // Crear un nuevo producto
 export const create = mutation({
   args: {
@@ -28,13 +36,23 @@ export const create = mutation({
     isActive: v.boolean(),
   },
   handler: async (ctx, args) => {
+    const resolvedImages = await Promise.all(
+      args.images.map(async (img) => {
+        if (!img.startsWith("http") && !img.startsWith("data:")) {
+          const url = await ctx.storage.getUrl(img)
+          return url || img
+        }
+        return img
+      })
+    )
+
     const productId = await ctx.db.insert("products", {
       businessId: args.businessId,
       name: args.name,
       description: args.description,
       price: args.price,
       stock: args.stock,
-      images: args.images,
+      images: resolvedImages,
       category: args.category,
       isActive: args.isActive,
     })

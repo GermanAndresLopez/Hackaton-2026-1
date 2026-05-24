@@ -1,7 +1,8 @@
 "use client"
 
-import { useState, useRef } from "react"
-import { Camera, ImageIcon } from "lucide-react"
+import { useState, useRef, useCallback } from "react"
+import { Camera, ImageIcon, Download } from "lucide-react"
+import { enhanceImage, STYLE_PARAMS } from "@/lib/imageEnhancer"
 
 type ImageStyle = "ubereats" | "instagram" | "banner" | "fondo_blanco"
 
@@ -11,6 +12,8 @@ const STYLES: { value: ImageStyle; label: string; description: string }[] = [
   { value: "banner", label: "Banner promo", description: "Horizontal con marca" },
   { value: "fondo_blanco", label: "Fondo blanco", description: "Producto limpio" },
 ]
+
+// ── Component ───────────────────────────────────────────────────
 
 export default function ImagenesPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -38,14 +41,28 @@ export default function ImagenesPage() {
     setResult(null)
   }
 
-  async function enhance() {
-    if (!selectedFile) return
+  const enhance = useCallback(async () => {
+    if (!preview) return
     setIsLoading(true)
-    await new Promise(r => setTimeout(r, 3000))
-    const prompt = `professional food photography, ${description || "delicious product"}, style: ${style}, white background, studio lighting, commercial photography`
-    setResult(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=1024&height=1024&nologo=true`)
-    setIsLoading(false)
-  }
+    try {
+      const params = STYLE_PARAMS[style]
+      const enhanced = await enhanceImage(preview, params)
+      setResult(enhanced)
+    } catch (err) {
+      console.error("Error enhancing image:", err)
+      alert("Error al mejorar la imagen. Intenta con otra foto.")
+    } finally {
+      setIsLoading(false)
+    }
+  }, [preview, style])
+
+  const handleDownload = useCallback(() => {
+    if (!result) return
+    const link = document.createElement("a")
+    link.download = `imagen-mejorada-${style}.jpg`
+    link.href = result
+    link.click()
+  }, [result, style])
 
   return (
     <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
@@ -54,7 +71,7 @@ export default function ImagenesPage() {
           Mejorador de Imágenes IA
         </h2>
         <p style={{ fontSize: '14px', color: '#7a7a7a', letterSpacing: '-0.224px' }}>
-          Convierte fotos caseras en publicidad profesional
+          Mejora profesional de tus fotos — misma imagen, mejor calidad
         </p>
       </div>
 
@@ -137,7 +154,7 @@ export default function ImagenesPage() {
               Describe tu producto <span style={{ color: '#7a7a7a', fontWeight: 400 }}>(opcional)</span>
             </h3>
             <p style={{ fontSize: '12px', color: '#7a7a7a', marginBottom: '12px', letterSpacing: '-0.12px' }}>
-              Ayuda a la IA a generar una imagen más precisa
+              Referencia para ajustes futuros de marketing
             </p>
             <textarea
               value={description}
@@ -172,10 +189,9 @@ export default function ImagenesPage() {
           <div style={{ padding: '16px 24px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <h3 style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f', letterSpacing: '-0.374px' }}>Imagen mejorada</h3>
             {result && (
-              <a href={result} download="imagen-mejorada.jpg" target="_blank"
-                className="btn-dark">
-                Descargar
-              </a>
+              <button onClick={handleDownload} className="btn-dark" style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Download size={14} /> Descargar
+              </button>
             )}
           </div>
           <div style={{ padding: '24px', flex: 1 }}>
@@ -184,13 +200,27 @@ export default function ImagenesPage() {
                 <div style={{ width: '48px', height: '48px', border: '3px solid #e0e0e0', borderTopColor: '#0066cc', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
                 <div style={{ textAlign: 'center' }}>
                   <p style={{ fontWeight: 600, color: '#1d1d1f', fontSize: '15px', letterSpacing: '-0.374px' }}>Mejorando tu imagen...</p>
-                  <p style={{ fontSize: '13px', color: '#7a7a7a', marginTop: '4px', letterSpacing: '-0.224px' }}>La IA está trabajando · ~10 segundos</p>
+                  <p style={{ fontSize: '13px', color: '#7a7a7a', marginTop: '4px', letterSpacing: '-0.224px' }}>Aplicando mejoras profesionales</p>
                 </div>
               </div>
             ) : result ? (
               <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Comparación antes/después */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '11px', color: '#7a7a7a', marginBottom: '6px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Original</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={preview!} alt="Original" style={{ width: '100%', borderRadius: '8px', border: '1px solid #e0e0e0', aspectRatio: '1', objectFit: 'cover' }} />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ fontSize: '11px', color: '#0066cc', marginBottom: '6px', textAlign: 'center', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>Mejorada</p>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={result} alt="Mejorada" style={{ width: '100%', borderRadius: '8px', border: '1px solid #0066cc33', aspectRatio: '1', objectFit: 'cover' }} />
+                  </div>
+                </div>
+                {/* Full size result */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={result} alt="Imagen mejorada por IA" style={{ width: '100%', borderRadius: '11px', border: '1px solid #e0e0e0' }} loading="lazy" />
+                <img src={result} alt="Imagen mejorada" style={{ width: '100%', borderRadius: '11px', border: '1px solid #e0e0e0' }} loading="lazy" />
                 <div style={{ display: 'flex', gap: '10px' }}>
                   <button onClick={enhance} className="btn-secondary" style={{ flex: 1, justifyContent: 'center', padding: '10px', fontSize: '14px' }}>
                     Regenerar

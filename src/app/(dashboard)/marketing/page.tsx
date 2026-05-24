@@ -3,7 +3,10 @@
 import { useState } from "react"
 import { useAction, useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
+import { Id } from "../../../../convex/_generated/dataModel"
 import { useBusinessStore } from "@/store/useBusinessStore"
+import { formatPrice } from "@/lib/utils"
+import { enhanceImage, STYLE_PARAMS } from "@/lib/imageEnhancer"
 import { Image as ImageIcon, Map, Bookmark, Copy, Save, Trash2, Loader2, Sparkles, AlertCircle, Download } from "lucide-react"
 
 type Goal = "lanzamiento" | "promocion" | "urgencia" | "fidelizacion"
@@ -24,7 +27,7 @@ export default function MarketingPage() {
 
   // Form states
   const [goal, setGoal] = useState<Goal>("lanzamiento")
-  const [product, setProduct] = useState("")
+  const [selectedProductId, setSelectedProductId] = useState<string>("")
 
   // Loading & Error states
   const [isLoading, setIsLoading] = useState(false)
@@ -43,19 +46,33 @@ export default function MarketingPage() {
   const deleteContent = useMutation(api.marketing.deletePost)
 
   // Queries for saved content
+  const products = useQuery(api.products.list, businessId ? { businessId } : "skip")
   const savedPosts = useQuery(api.marketing.listPosts, businessId ? { businessId } : "skip")
   const savedRoadmaps = useQuery(api.marketing.listRoadmaps, businessId ? { businessId } : "skip")
 
   // Handlers
   async function handleGeneratePost() {
-    if (!product.trim() || !businessId) return
+    if (!selectedProductId || !businessId) return
     setIsLoading(true)
     setError("")
     setSuccessMsg("")
     setPostResult(null)
     
     try {
-      const data = await generatePost({ product, goal })
+      const data = await generatePost({ productId: selectedProductId as Id<"products">, goal })
+      
+      // Si el backend devolvió una imagen (la foto original del producto)
+      // aplicamos la mejora automática (brillo, contraste, colores) localmente
+      if (data.imageUrl) {
+        try {
+          const enhancedUrl = await enhanceImage(data.imageUrl, STYLE_PARAMS.auto_enhance)
+          data.imageUrl = enhancedUrl
+        } catch (err) {
+          console.warn("No se pudo aplicar la mejora de imagen automática", err)
+          // Si falla, se queda con la original
+        }
+      }
+      
       setPostResult(data)
     } catch (err: any) {
       console.error(err)
@@ -66,14 +83,14 @@ export default function MarketingPage() {
   }
 
   async function handleGenerateRoadmap() {
-    if (!product.trim() || !businessId) return
+    if (!selectedProductId || !businessId) return
     setIsLoading(true)
     setError("")
     setSuccessMsg("")
     setRoadmapResult(null)
     
     try {
-      const data = await generateRoadmap({ product, goal })
+      const data = await generateRoadmap({ productId: selectedProductId as Id<"products">, goal })
       setRoadmapResult(data)
     } catch (err: any) {
       console.error(err)
@@ -173,23 +190,34 @@ export default function MarketingPage() {
   const renderContextInput = () => (
     <div className="card-apple">
       <h3 style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f', marginBottom: '14px', letterSpacing: '-0.374px' }}>
-        Contexto (Producto, negocio, marca)
+        ¿Qué producto deseas promocionar?
       </h3>
-      <textarea
-        value={product}
-        onChange={e => setProduct(e.target.value)}
-        placeholder="Ej: Vendo brownies artesanales de chocolate. Son recién horneados cada día..."
-        rows={4}
-        style={{
-          width: '100%', padding: '12px 14px', borderRadius: '11px',
-          border: '1px solid #e0e0e0', background: '#fff',
-          fontSize: '14px', fontFamily: '"SF Pro Text", system-ui, -apple-system, sans-serif',
-          letterSpacing: '-0.224px', color: '#1d1d1f',
-          resize: 'none', outline: 'none', lineHeight: 1.5,
-        }}
-        onFocus={e => { e.currentTarget.style.borderColor = '#0066cc'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)' }}
-        onBlur={e => { e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.boxShadow = 'none' }}
-      />
+      {products === undefined ? (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#7a7a7a', fontSize: '13px' }}>
+          <Loader2 size={14} className="animate-spin" /> Cargando productos...
+        </div>
+      ) : products.length === 0 ? (
+        <p style={{ fontSize: '13px', color: '#ef4444' }}>No tienes productos creados. Ve a la pestaña de Productos para crear uno primero.</p>
+      ) : (
+        <select
+          value={selectedProductId}
+          onChange={e => setSelectedProductId(e.target.value)}
+          style={{
+            width: '100%', padding: '12px 14px', borderRadius: '11px',
+            border: '1px solid #e0e0e0', background: '#fff',
+            fontSize: '14px', fontFamily: '"SF Pro Text", system-ui, -apple-system, sans-serif',
+            letterSpacing: '-0.224px', color: '#1d1d1f',
+            outline: 'none', cursor: 'pointer'
+          }}
+          onFocus={e => { e.currentTarget.style.borderColor = '#0066cc'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)' }}
+          onBlur={e => { e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.boxShadow = 'none' }}
+        >
+          <option value="" disabled>Selecciona un producto de tu catálogo</option>
+          {products.map(p => (
+            <option key={p._id} value={p._id}>{p.name} - {formatPrice(p.price)}</option>
+          ))}
+        </select>
+      )}
     </div>
   )
 
@@ -268,7 +296,7 @@ export default function MarketingPage() {
             {renderMessages()}
             <button
               onClick={handleGeneratePost}
-              disabled={!product.trim() || isLoading}
+              disabled={!selectedProductId || isLoading}
               className="btn-primary"
               style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '16px' }}
             >
@@ -300,7 +328,7 @@ export default function MarketingPage() {
               ) : postResult ? (
                 <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                   {postResult.imageUrl && (
-                    <div style={{ borderRadius: '11px', overflow: 'hidden', border: '1px solid #e0e0e0', background: '#f5f5f7', position: 'relative', group: 'true' }}>
+                    <div style={{ borderRadius: '11px', overflow: 'hidden', border: '1px solid #e0e0e0', background: '#f5f5f7', position: 'relative' }}>
                       <img src={postResult.imageUrl} alt="AI Generated" style={{ width: '100%', height: 'auto', objectFit: 'contain' }} />
                       <button 
                         onClick={() => downloadImage(postResult.imageUrl)}
@@ -359,7 +387,7 @@ export default function MarketingPage() {
             {renderMessages()}
             <button
               onClick={handleGenerateRoadmap}
-              disabled={!product.trim() || isLoading}
+              disabled={!selectedProductId || isLoading}
               className="btn-primary"
               style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: '15px', marginTop: '16px', background: '#8b5cf6', borderColor: '#8b5cf6' }}
             >

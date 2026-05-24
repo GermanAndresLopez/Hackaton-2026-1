@@ -129,10 +129,10 @@ export const deletePost = mutation({
 // ─── Generar Post (texto + imagen) ───
 export const generatePost = action({
   args: {
-    product: v.string(),
+    productId: v.id("products"),
     goal: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<any> => {
     const nvidiaKey =
       process.env.NVIDIA_API_KEY_1 ||
       process.env.NVIDIA_API_KEY_2 ||
@@ -142,10 +142,19 @@ export const generatePost = action({
       throw new Error("No hay API Key de NVIDIA configurada.")
     }
 
-    // 1. Generar texto con Llama
-    const prompt = `
+    const product = await ctx.runQuery(api.products.getById, { id: args.productId })
+    if (!product) throw new Error("Producto no encontrado")
+
+    const productDesc = `Nombre: ${product.name}\nDescripción: ${product.description}\nPrecio: ${product.price}\nCategoría: ${product.category}`
+
+    let textData: any = null
+    const hasImage = product.images && product.images.length > 0
+
+    const systemPrompt = `
 Eres un experto en marketing digital para Instagram.
-El producto/servicio es: ${args.product}
+El producto/servicio es:
+${productDesc}
+
 El objetivo de esta campaña es: ${args.goal}
 
 Debes retornar EXCLUSIVAMENTE un objeto JSON válido con esta estructura:
@@ -153,16 +162,22 @@ Debes retornar EXCLUSIVAMENTE un objeto JSON válido con esta estructura:
   "texto": "El texto principal de la publicación para Instagram. Incluye emojis relevantes.",
   "cta": "El llamado a la acción (Call To Action).",
   "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
-  "imagePrompt": "A highly detailed prompt in English for generating a professional product photo. Photorealistic, studio lighting, high quality, no text overlays, no watermarks. Focus on the product itself."
+  "imagePrompt": "A highly detailed prompt in English for generating a professional product photo."
 }
 
 Responde SOLO con el JSON, sin explicaciones ni markdown.
 `
 
-    let textData: any = null
-
     try {
-      console.log("[Marketing] Generando texto con NVIDIA NIM...")
+      console.log(`[Marketing] Generando texto con NVIDIA NIM (Text)...`)
+      
+      const messages = [{
+        role: "user",
+        content: systemPrompt
+      }]
+
+      const model = "meta/llama-3.3-70b-instruct"
+
       const response = await fetch(
         "https://integrate.api.nvidia.com/v1/chat/completions",
         {
@@ -172,8 +187,8 @@ Responde SOLO con el JSON, sin explicaciones ni markdown.
             Authorization: `Bearer ${nvidiaKey}`,
           },
           body: JSON.stringify({
-            model: "meta/llama-3.3-70b-instruct",
-            messages: [{ role: "user", content: prompt }],
+            model,
+            messages,
             temperature: 0.7,
             max_tokens: 1500,
           }),
@@ -197,12 +212,16 @@ Responde SOLO con el JSON, sin explicaciones ni markdown.
       throw new Error("Falló la generación de texto de marketing.")
     }
 
-    // 2. Generar imagen con FLUX
+    // 2. Generar imagen con FLUX o mantener la existente
     let imageUrl: string | null = null
 
-    if (textData?.imagePrompt) {
+    if (hasImage && product.images && product.images.length > 0) {
+      // MANTENER LA IMAGEN ORIGINAL en lugar de generar una nueva que cambie el producto
+      imageUrl = product.images[0]
+      console.log("[Marketing] Usando la imagen original del producto.")
+    } else if (textData?.imagePrompt) {
       try {
-        console.log("[Marketing] Generando imagen con NVIDIA NIM (FLUX)...")
+        console.log("[Marketing] Producto sin imagen. Generando imagen con NVIDIA NIM (FLUX)...")
         const imgResponse = await fetch(
           "https://ai.api.nvidia.com/v1/genai/black-forest-labs/flux.1-schnell",
           {
@@ -249,10 +268,10 @@ Responde SOLO con el JSON, sin explicaciones ni markdown.
 // ─── Generar Roadmap ───
 export const generateRoadmap = action({
   args: {
-    product: v.string(),
+    productId: v.id("products"),
     goal: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, args): Promise<any> => {
     const nvidiaKey =
       process.env.NVIDIA_API_KEY_1 ||
       process.env.NVIDIA_API_KEY_2 ||
@@ -262,10 +281,17 @@ export const generateRoadmap = action({
       throw new Error("No hay API Key de NVIDIA configurada.")
     }
 
+    const product = await ctx.runQuery(api.products.getById, { id: args.productId })
+    if (!product) throw new Error("Producto no encontrado")
+
+    const productDesc = `Nombre: ${product.name}\nDescripción: ${product.description}\nPrecio: ${product.price}\nCategoría: ${product.category}`
+
     const prompt = `
 Eres un estratega de marketing digital experto en redes sociales para pequeños emprendimientos latinoamericanos.
 
-El producto/servicio es: ${args.product}
+El producto/servicio es:
+${productDesc}
+
 El objetivo de marketing es: ${args.goal}
 
 Crea un ROADMAP detallado de contenido para redes sociales de 7 días. 

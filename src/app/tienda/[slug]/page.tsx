@@ -5,11 +5,13 @@ import { useState } from "react"
 import { buildWhatsAppUrl, buildTelegramUrl, formatPrice } from "@/lib/utils"
 import { useQuery } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
+import { Minus, Plus, ShoppingCart } from "lucide-react"
 
 export default function TiendaPublicaPage() {
   const params = useParams()
   const slug = params.slug as string
   const [categoryFilter, setCategoryFilter] = useState("Todas")
+  const [cart, setCart] = useState<Record<string, number>>({})
 
   // Fetch business by slug
   const business = useQuery(api.businesses.getBySlug, { slug })
@@ -48,8 +50,48 @@ export default function TiendaPublicaPage() {
   const waUrl = business.whatsapp ? buildWhatsAppUrl(business.whatsapp, `Hola, me interesa hacer un pedido en ${business.name}`) : null
   const tgUrl = business.telegram ? buildTelegramUrl(business.telegram) : null
 
+  // Cart functions
+  const updateQuantity = (productId: string, delta: number) => {
+    setCart(prev => {
+      const newQty = (prev[productId] || 0) + delta
+      if (newQty <= 0) {
+        const newCart = { ...prev }
+        delete newCart[productId]
+        return newCart
+      }
+      return { ...prev, [productId]: newQty }
+    })
+  }
+
+  const getCartTotal = () => {
+    let total = 0
+    let count = 0
+    for (const [id, qty] of Object.entries(cart)) {
+      const product = activeProducts.find(p => p._id === id)
+      if (product) {
+        total += product.price * qty
+        count += qty
+      }
+    }
+    return { total, count }
+  }
+
+  const { total: cartTotal, count: cartCount } = getCartTotal()
+
+  const generateCartMessage = () => {
+    let message = `Hola, quiero realizar el siguiente pedido:\n\n`
+    for (const [id, qty] of Object.entries(cart)) {
+      const product = activeProducts.find(p => p._id === id)
+      if (product) {
+        message += `- ${qty}x *${product.name}* (${formatPrice(product.price)})\n`
+      }
+    }
+    message += `\n*Total estimado: ${formatPrice(cartTotal)}*`
+    return message
+  }
+
   return (
-    <div style={{ minHeight: '100vh', background: '#f5f5f7', fontFamily: '"SF Pro Text", system-ui, -apple-system, sans-serif' }}>
+    <div style={{ minHeight: '100vh', background: '#f5f5f7', fontFamily: '"SF Pro Text", system-ui, -apple-system, sans-serif', paddingBottom: cartCount > 0 ? '100px' : '0' }}>
       {/* ── Nav ── */}
       <nav style={{ background: '#000', height: '44px', display: 'flex', alignItems: 'center', padding: '0 24px' }}>
         <span style={{ color: '#fff', fontSize: '14px', fontWeight: 600, letterSpacing: '-0.224px' }}>Punto de Arranque</span>
@@ -139,9 +181,13 @@ export default function TiendaPublicaPage() {
                 {/* Product image area */}
                 <div style={{
                   height: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '72px', background: '#f5f5f7', borderBottom: '1px solid #e0e0e0',
+                  fontSize: '72px', background: '#f5f5f7', borderBottom: '1px solid #e0e0e0', overflow: 'hidden'
                 }}>
-                  <span style={{ filter: 'drop-shadow(rgba(0,0,0,0.22) 3px 5px 20px)' }}>{product.images?.[0] || "📦"}</span>
+                  {product.images && product.images[0] && product.images[0].startsWith("http") ? (
+                    <img src={product.images[0]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <span style={{ filter: 'drop-shadow(rgba(0,0,0,0.22) 3px 5px 20px)' }}>{product.images?.[0] || "📦"}</span>
+                  )}
                 </div>
                 <div style={{ padding: '20px' }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '6px' }}>
@@ -161,16 +207,24 @@ export default function TiendaPublicaPage() {
                     <p style={{ fontFamily: '"SF Pro Display", system-ui, -apple-system, sans-serif', fontSize: '21px', fontWeight: 600, color: '#1d1d1f', letterSpacing: '-0.374px' }}>
                       {formatPrice(product.price)}
                     </p>
-                    {business.whatsapp && (
-                      <a
-                        href={buildWhatsAppUrl(business.whatsapp, `Hola, me interesa este producto: *${product.name}* (${formatPrice(product.price)})`)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', background: '#0066cc', color: '#fff', fontSize: '14px', fontWeight: 400, padding: '8px 18px', borderRadius: '9999px', textDecoration: 'none', letterSpacing: '-0.224px', transition: 'opacity 120ms' }}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', background: '#f5f5f7', borderRadius: '999px', padding: '4px' }}>
+                      <button 
+                        onClick={() => updateQuantity(product._id, -1)}
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: cart[product._id] ? '#fff' : 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: cart[product._id] ? '#1d1d1f' : '#a1a1aa', boxShadow: cart[product._id] ? '0 2px 4px rgba(0,0,0,0.05)' : 'none' }}
+                        disabled={!cart[product._id]}
                       >
-                        Pedir →
-                      </a>
-                    )}
+                        <Minus size={16} />
+                      </button>
+                      <span style={{ fontSize: '15px', fontWeight: 600, color: '#1d1d1f', minWidth: '20px', textAlign: 'center' }}>
+                        {cart[product._id] || 0}
+                      </span>
+                      <button 
+                        onClick={() => updateQuantity(product._id, 1)}
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: '#1d1d1f', boxShadow: '0 2px 4px rgba(0,0,0,0.05)' }}
+                      >
+                        <Plus size={16} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -187,6 +241,38 @@ export default function TiendaPublicaPage() {
           {" "}· {business.name}
         </p>
       </footer>
+
+      {/* Floating Cart Widget */}
+      {cartCount > 0 && business.whatsapp && (
+        <div style={{
+          position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+          background: '#1d1d1f', color: '#fff', padding: '16px 24px', borderRadius: '999px',
+          display: 'flex', alignItems: 'center', gap: '24px', boxShadow: '0 10px 40px rgba(0,0,0,0.3)',
+          zIndex: 100, width: 'calc(100% - 48px)', maxWidth: '400px', justifyContent: 'space-between'
+        }} className="fade-in">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{ background: 'rgba(255,255,255,0.1)', padding: '8px', borderRadius: '50%' }}>
+              <ShoppingCart size={20} />
+            </div>
+            <div>
+              <p style={{ fontSize: '13px', fontWeight: 600, opacity: 0.8 }}>{cartCount} {cartCount === 1 ? 'ítem' : 'ítems'}</p>
+              <p style={{ fontSize: '16px', fontWeight: 700 }}>{formatPrice(cartTotal)}</p>
+            </div>
+          </div>
+          <a
+            href={buildWhatsAppUrl(business.whatsapp, generateCartMessage())}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ 
+              background: '#25D366', color: '#fff', padding: '12px 20px', borderRadius: '999px', 
+              fontSize: '14px', fontWeight: 600, textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px',
+              transition: 'transform 120ms',
+            }}
+          >
+            Finalizar Pedido
+          </a>
+        </div>
+      )}
     </div>
   )
 }

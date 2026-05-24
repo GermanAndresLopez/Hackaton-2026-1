@@ -5,7 +5,7 @@ import { formatPrice } from "@/lib/utils"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import { useBusinessStore } from "@/store/useBusinessStore"
-import { Package, Search, X } from "lucide-react"
+import { Package, Search, X, Upload, Loader2 } from "lucide-react"
 
 const INPUT_STYLE = {
   padding: '10px 14px',
@@ -36,6 +36,7 @@ export default function ProductosPage() {
   const createProductMutation = useMutation(api.products.create)
   const toggleActiveMutation = useMutation(api.products.toggleActive)
   const deleteProductMutation = useMutation(api.products.deleteProduct)
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
 
   const [showForm, setShowForm] = useState(false)
   const [search, setSearch] = useState("")
@@ -58,6 +59,8 @@ export default function ProductosPage() {
   const [categorySelection, setCategorySelection] = useState(PREDEFINED_CATEGORIES[0])
   const [customCategory, setCustomCategory] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
 
   // Obtener categorías únicas de los productos para el filtro
   const uniqueCategories = Array.from(new Set(products.map(p => p.category))).filter(Boolean)
@@ -77,12 +80,27 @@ export default function ProductosPage() {
 
     setIsSubmitting(true)
     try {
+      let uploadedImageUrl = ""
+
+      if (selectedFile) {
+        // Step 1: Get short-lived upload URL
+        const uploadUrl = await generateUploadUrl()
+        // Step 2: POST the file to the URL
+        const result = await fetch(uploadUrl, {
+          method: "POST",
+          headers: { "Content-Type": selectedFile.type },
+          body: selectedFile,
+        })
+        const { storageId } = await result.json()
+        uploadedImageUrl = storageId
+      }
+
       await createProductMutation({
         businessId,
         name: newName,
         description: newDesc,
         price: Number(newPrice),
-        images: [],
+        images: uploadedImageUrl ? [uploadedImageUrl] : [],
         category: finalCategory,
         isActive: true,
       })
@@ -93,6 +111,8 @@ export default function ProductosPage() {
       setNewPrice("")
       setCategorySelection(PREDEFINED_CATEGORIES[0])
       setCustomCategory("")
+      setSelectedFile(null)
+      setImagePreview(null)
       setShowForm(false)
     } catch (err) {
       console.error("Error al crear producto en Convex:", err)
@@ -200,8 +220,12 @@ export default function ProductosPage() {
           onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           >
             {/* Thumbnail */}
-            <div style={{ width: '56px', height: '56px', borderRadius: '11px', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #e0e0e0' }}>
-              <Package size={26} style={{ color: '#7a7a7a' }} />
+            <div style={{ width: '56px', height: '56px', borderRadius: '11px', background: '#f5f5f7', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #e0e0e0', overflow: 'hidden' }}>
+              {product.images && product.images[0] ? (
+                <img src={product.images[0]} alt={product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <Package size={26} style={{ color: '#7a7a7a' }} />
+              )}
             </div>
 
             {/* Info */}
@@ -269,6 +293,31 @@ export default function ProductosPage() {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {/* Image Upload */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'center', justifyContent: 'center', border: '2px dashed #e0e0e0', borderRadius: '11px', padding: '24px', background: '#fafafa', cursor: 'pointer', position: 'relative' }}>
+                <input 
+                  type="file" 
+                  accept="image/*" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0]
+                    if (file) {
+                      setSelectedFile(file)
+                      setImagePreview(URL.createObjectURL(file))
+                    }
+                  }}
+                  style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                />
+                {imagePreview ? (
+                  <img src={imagePreview} alt="Preview" style={{ width: '100%', maxHeight: '160px', objectFit: 'contain', borderRadius: '8px' }} />
+                ) : (
+                  <>
+                    <Upload size={32} style={{ color: '#0066cc' }} />
+                    <p style={{ fontSize: '14px', color: '#1d1d1f', fontWeight: 600 }}>Subir foto del producto</p>
+                    <p style={{ fontSize: '12px', color: '#7a7a7a' }}>Haz clic o arrastra una imagen</p>
+                  </>
+                )}
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '6px', letterSpacing: '-0.224px' }}>Nombre del producto</label>
                 <input 

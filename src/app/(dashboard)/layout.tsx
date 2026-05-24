@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { ROUTES } from "@/lib/constants"
 import { useBusinessStore } from "@/store/useBusinessStore"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import {
   LayoutDashboard, Package, Sparkles, ImageIcon,
   Bot, Send, TrendingUp, type LucideIcon,
@@ -29,11 +29,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const currentUser     = useBusinessStore((s) => s.currentUser)
   const resetStore      = useBusinessStore((s) => s.reset)
 
-  useEffect(() => {
-    if (!currentBusiness) router.push(ROUTES.login)
-  }, [currentBusiness, router])
+  const [mounted, setMounted] = useState(false)
 
-  if (!currentBusiness) {
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (mounted && !currentBusiness) {
+      router.push(ROUTES.login)
+    }
+  }, [currentBusiness, router, mounted])
+
+  if (!mounted || !currentBusiness) {
     return (
       <div style={{
         minHeight: '100vh', display: 'flex',
