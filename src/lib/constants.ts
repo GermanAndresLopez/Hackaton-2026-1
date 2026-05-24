@@ -46,6 +46,7 @@ export const ROUTES = {
   imagenes: "/imagenes",
   agente: "/agente",
   bot: "/bot",
+  chats: "/chats",
   metricas: "/metricas",
   tienda: (slug: string) => `/tienda/${slug}`,
 } as const

@@ -15,13 +15,23 @@ import {
 } from "lucide-react"
 
 export default function DashboardPage() {
-  const currentBusiness = useBusinessStore((state) => state.currentBusiness)
+  const storeBusiness = useBusinessStore((state) => state.currentBusiness)
   const setBusiness = useBusinessStore((state) => state.setBusiness)
-  const businessId = currentBusiness?._id
+  const businessId = storeBusiness?._id
+
+  // Obtener negocio reactivo desde Convex para ver actualizaciones en tiempo real
+  const reactiveBusiness = useQuery(api.businesses.getById, businessId ? { id: businessId as any } : "skip")
+  
+  // Usar el reactivo si está disponible, sino el del store
+  const currentBusiness = reactiveBusiness || storeBusiness
 
   // Consulta de productos reales
   const products = useQuery(api.products.list, businessId ? { businessId } : "skip") ?? []
   const updateBusiness = useMutation(api.businesses.updateBusiness)
+
+  // Consulta de conversaciones pendientes
+  const conversations = useQuery(api.conversations.listByBusiness, businessId ? { businessId } : "skip")
+  const pendingPaymentsCount = conversations?.filter((c: any) => !c.isResolved).length || 0
   
   const [whatsapp, setWhatsapp] = useState("")
   const [isSavingContact, setIsSavingContact] = useState(false)
@@ -105,6 +115,57 @@ export default function DashboardPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+
+      {/* ── Telegram Pending Payments Notification Banner ── */}
+      {pendingPaymentsCount > 0 && (
+        <div style={{
+          background: '#ffffff',
+          borderRadius: '18px',
+          border: '1px solid #e0e0e0',
+          padding: '20px 24px',
+          marginBottom: '24px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          color: '#1d1d1f',
+          boxShadow: '0 4px 18px rgba(0,0,0,0.03)',
+          flexWrap: 'wrap',
+          gap: '16px',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '11px',
+              background: '#e8f1fb',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '20px',
+              flexShrink: 0,
+            }}>
+              💳
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <p style={{ fontWeight: 600, fontSize: '15px', color: '#1d1d1f', letterSpacing: '-0.374px', margin: 0 }}>
+                  Tienes {pendingPaymentsCount} {pendingPaymentsCount === 1 ? 'pedido listo' : 'pedidos listos'} para cerrar
+                </p>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#0066cc' }} />
+              </div>
+              <p style={{ fontSize: '13px', color: '#7a7a7a', marginTop: '2px', margin: '2px 0 0', letterSpacing: '-0.224px' }}>
+                {pendingPaymentsCount === 1 ? 'Un cliente' : `${pendingPaymentsCount} clientes`} en Telegram {pendingPaymentsCount === 1 ? 'está esperando' : 'están esperando'} tus datos de pago para finalizar su compra.
+              </p>
+            </div>
+          </div>
+          <Link href={ROUTES.bot} style={{
+            background: '#0066cc', color: '#fff',
+            fontSize: '13px', fontWeight: 600,
+            padding: '10px 18px', borderRadius: '9999px',
+            textDecoration: 'none', letterSpacing: '-0.224px',
+            display: 'inline-block',
+            boxShadow: '0 2px 8px rgba(0,102,204,0.15)',
+          }}>
+            Atender Clientes →
+          </Link>
+        </div>
+      )}
 
       {/* ── Welcome banner ── */}
       <div style={{

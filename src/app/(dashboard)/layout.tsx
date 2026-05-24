@@ -12,7 +12,7 @@ import { api } from "../../../convex/_generated/api"
 import { toast } from "sonner"
 import {
   LayoutDashboard, Package, Sparkles,
-  Send, TrendingUp, Settings, X, Phone, Loader2, Check,
+  Send, TrendingUp, Settings, X, Phone, Loader2, Check, MessageCircle,
   type LucideIcon,
 } from "lucide-react"
 
@@ -21,6 +21,7 @@ const NAV_ITEMS: { href: string; icon: LucideIcon; label: string }[] = [
   { href: ROUTES.productos,  icon: Package,          label: "Productos" },
   { href: ROUTES.marketing,  icon: Sparkles,         label: "Marketing" },
   { href: ROUTES.bot,        icon: Send,             label: "Bot Telegram" },
+  { href: ROUTES.chats,      icon: MessageCircle,    label: "Chats" },
   { href: ROUTES.metricas,   icon: TrendingUp,       label: "Métricas" },
 ]
 
@@ -45,6 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [mounted, setMounted]       = useState(false)
   const [showSettings, setShow]     = useState(false)
   const [whatsapp, setWhatsapp]     = useState("")
+  const [telegram, setTelegram]     = useState("")
   const [isSaving, setIsSaving]     = useState(false)
   const [saved, setSaved]           = useState(false)
 
@@ -76,6 +78,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const openSettings = () => {
     setWhatsapp((currentBusiness as any).whatsapp || "")
+    setTelegram((currentBusiness as any).telegram || "")
     setSaved(false)
     setShow(true)
   }
@@ -86,7 +89,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     try {
       const updated = await updateBusiness({
         id: currentBusiness._id,
-        updates: { whatsapp: whatsapp.trim() || undefined },
+        updates: { 
+          whatsapp: whatsapp.trim() || undefined,
+          telegram: telegram.trim() || undefined 
+        },
       })
       if (updated) setBusiness(updated as any)
       setSaved(true)
@@ -242,6 +248,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               />
               <p style={{ fontSize: '12px', color: '#7a7a7a', marginTop: '6px', lineHeight: 1.4 }}>
                 Incluye el código de país sin +. Para Colombia: <strong>57</strong> seguido del número.
+              </p>
+
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 600, color: '#1d1d1f', marginBottom: '8px', letterSpacing: '-0.2px', marginTop: '16px' }}>
+                <Send size={13} style={{ color: '#0088cc' }} /> Usuario o Enlace de Telegram
+              </label>
+              <input
+                value={telegram}
+                onChange={e => setTelegram(e.target.value)}
+                placeholder="Ej: t.me/mibot_bot o @mibot_bot"
+                style={INPUT_S}
+                onFocus={e => { e.currentTarget.style.borderColor = '#0066cc'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(0,102,204,0.12)' }}
+                onBlur={e => { e.currentTarget.style.borderColor = '#e0e0e0'; e.currentTarget.style.boxShadow = 'none' }}
+              />
+              <p style={{ fontSize: '12px', color: '#7a7a7a', marginTop: '6px', lineHeight: 1.4 }}>
+                Asegúrate de haber guardado tu Token en la sección de <strong>Bot Telegram</strong> para que funcione.
               </p>
             </div>
 

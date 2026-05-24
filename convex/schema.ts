@@ -128,6 +128,7 @@ export default defineSchema({
       })
     ),
     isResolved: v.boolean(),
+    botEnabled: v.optional(v.boolean()),
   })
     .index("by_businessId", ["businessId"])
     .index("by_platform", ["businessId", "platform"]),

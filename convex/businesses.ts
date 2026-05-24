@@ -40,6 +40,7 @@ export const updateBusiness = mutation({
       name: v.optional(v.string()),
       botToken: v.optional(v.string()),
       botContext: v.optional(v.string()),
+      tone: v.optional(v.string()),
     }),
   },
   handler: async (ctx, args) => {

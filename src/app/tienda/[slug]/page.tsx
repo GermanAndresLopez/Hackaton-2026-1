@@ -61,7 +61,10 @@ export default function TiendaPublicaPage() {
   const waUrl = business.whatsapp
     ? buildWhatsAppUrl(business.whatsapp, `Hola, me interesa hacer un pedido en ${business.name}`)
     : null
-  const tgUrl = business.telegram ? buildTelegramUrl(business.telegram) : null
+  // Solo se muestra Telegram si configuró ambos (el enlace y el token del bot)
+  const tgUrl = (business.telegram && business.botToken) 
+    ? buildTelegramUrl(business.telegram) 
+    : null
 
   // ── Cart helpers ──
   const updateQuantity = (productId: string, delta: number) => {
